@@ -1,0 +1,16 @@
+App;Architecture;Scenario;List_Size;Run;Status;Scroll_Cycles;Measured_Duration_ms;CPU_Modal_percent;CPU_Peak_percent;RAM_Peak_MB;Total_Frames_Rendered;Janky_Frames_Count;Janky_Frames_Percent;Janky_Frames_Count ( legacy );Janky_Frames_Percent ( legacy );Frame_P50_ms;Frame_P90_ms;Frame_P95_ms;Frame_P99_ms;Missed_Vsync_Count;Slow_UI_Thread_Count;Slow_Draw_Commands_Count;Frozen_Frames_Count
+RN;Legacy;Large list scroll;1000;1;Finished;11;60009;18;20;189,7;3412;203;5,95;1807;52,96;11;22;26;30;0;202;18;0
+RN;Legacy;Large list scroll;1000;2;Finished;11;60009;18;20;190,5;3529;199;5,64;1736;49,19;11;22;25;29;0;198;23;0
+RN;Legacy;Large list scroll;1000;3;Finished;11;60017;17;20;190,2;3534;193;5,46;1714;48,5;11;22;24;29;0;191;22;0
+RN;Legacy;Large list scroll;1000;4;Finished;11;60017;18;21;191,1;3522;209;5,93;1774;50,37;11;22;25;30;2;209;33;0
+RN;Legacy;Large list scroll;1000;5;Finished;11;60004;17;22;190,7;3597;146;4,06;1694;47,09;10;22;23;29;0;144;21;0
+RN;NewArch;Large list scroll;1000;1;Finished;11;60006;19;22;229,4;5298;91;1,72;2875;54,27;12;21;24;30;0;91;9;0
+RN;NewArch;Large list scroll;1000;2;Finished;11;60011;18;23;230;5307;86;1,62;2814;53,02;12;21;23;29;2;86;8;0
+RN;NewArch;Large list scroll;1000;3;Finished;11;60009;17;23;232,2;5294;89;1,68;2859;54;12;21;24;30;1;89;7;0
+RN;NewArch;Large list scroll;1000;4;Finished;11;60004;18;21;230;5276;105;1,99;2796;52,99;12;21;24;30;0;105;12;0
+RN;NewArch;Large list scroll;1000;5;Finished;11;60009;18;22;230,5;5283;101;1,91;2820;53,38;12;21;24;30;0;101;13;0
+Native;Native;Large list scroll;1000;1;Finished;11;60011;8;8;127,1;3634;2;0,06;206;5,67;9;10;10;11;0;2;0;0
+Native;Native;Large list scroll;1000;2;Finished;11;60013;7;8;127;3632;1;0,03;199;5,48;9;10;10;11;0;1;0;0
+Native;Native;Large list scroll;1000;3;Finished;11;60014;7;8;127,3;3637;2;0,05;378;10,39;9;10;12;14;0;2;0;0
+Native;Native;Large list scroll;1000;4;Finished;11;60005;7;7;126,9;3636;1;0,03;212;5,83;9;10;10;11;0;1;0;0
+Native;Native;Large list scroll;1000;5;Finished;11;60007;8;9;127,9;3630;5;0,14;611;16,83;9;12;13;14;0;3;2;0

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#ffffff"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp"
+    android:paddingTop="9dp"
+    android:paddingBottom="9dp">
+
+    <!-- Bottom divider is added programmatically via DividerItemDecoration in MainActivity -->
+
+    <TextView
+        android:id="@+id/tvItemName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:gravity="start" />
+
+    <TextView
+        android:id="@+id/tvItemValue"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/tvItemChange"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:gravity="end" />
+
+</LinearLayout>

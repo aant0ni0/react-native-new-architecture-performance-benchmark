@@ -1,0 +1,35 @@
+package com.example.nativebenchmarkapp
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_home)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
+
+        findViewById<Button>(R.id.btnScenario1).setOnClickListener {
+            startActivity(Intent(this, Scenario1Activity::class.java))
+        }
+        findViewById<Button>(R.id.btnScenario2).setOnClickListener {
+            startActivity(Intent(this, Scenario2Activity::class.java))
+        }
+        findViewById<Button>(R.id.btnScenario3).setOnClickListener {
+            startActivity(Intent(this, Scenario3Activity::class.java))
+        }
+        findViewById<Button>(R.id.btnScenario4).setOnClickListener {
+            startActivity(Intent(this, Scenario4Activity::class.java))
+        }
+    }
+}
