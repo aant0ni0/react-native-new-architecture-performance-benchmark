@@ -19,6 +19,7 @@ const BASE_ANIM_Y_MS = 900;
 const BASE_ANIM_SCALE_MS = 1500;
 const BASE_ANIM_ROT_MS = 2000;
 const ANIM_STEP_MS = 50;
+const USE_NATIVE_DRIVER = false;
 const BOX_COLORS = [
   '#e53935', '#1e88e5', '#43a047',
   '#fb8c00', '#8e24aa', '#00acc1',
@@ -138,13 +139,13 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
             toValue: 1,
             duration: durationX,
             easing: easeInOut,
-            useNativeDriver: true,
+            useNativeDriver: USE_NATIVE_DRIVER,
           }),
           Animated.timing(animX[index], {
             toValue: -1,
             duration: durationX,
             easing: easeInOut,
-            useNativeDriver: true,
+            useNativeDriver: USE_NATIVE_DRIVER,
           }),
         ]),
       );
@@ -155,13 +156,13 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
             toValue: 1,
             duration: durationY,
             easing: easeInOut,
-            useNativeDriver: true,
+            useNativeDriver: USE_NATIVE_DRIVER,
           }),
           Animated.timing(animY[index], {
             toValue: -1,
             duration: durationY,
             easing: easeInOut,
-            useNativeDriver: true,
+            useNativeDriver: USE_NATIVE_DRIVER,
           }),
         ]),
       );
@@ -172,13 +173,13 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
             toValue: 1,
             duration: durationScale,
             easing: easeInOut,
-            useNativeDriver: true,
+            useNativeDriver: USE_NATIVE_DRIVER,
           }),
           Animated.timing(animScale[index], {
             toValue: 0,
             duration: durationScale,
             easing: easeInOut,
-            useNativeDriver: true,
+            useNativeDriver: USE_NATIVE_DRIVER,
           }),
         ]),
       );
@@ -188,7 +189,7 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
           toValue: 1,
           duration: durationRotation,
           easing: Easing.linear,
-          useNativeDriver: true,
+          useNativeDriver: USE_NATIVE_DRIVER,
         }),
       );
 

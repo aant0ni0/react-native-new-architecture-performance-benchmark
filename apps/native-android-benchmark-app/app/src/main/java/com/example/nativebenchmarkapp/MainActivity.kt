@@ -28,8 +28,5 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnScenario3).setOnClickListener {
             startActivity(Intent(this, Scenario3Activity::class.java))
         }
-        findViewById<Button>(R.id.btnScenario4).setOnClickListener {
-            startActivity(Intent(this, Scenario4Activity::class.java))
-        }
     }
 }

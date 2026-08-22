@@ -36,10 +36,6 @@
             android:name=".Scenario3Activity"
             android:exported="false" />
 
-        <activity
-            android:name=".Scenario4Activity"
-            android:exported="false" />
-
     </application>
 
 </manifest>

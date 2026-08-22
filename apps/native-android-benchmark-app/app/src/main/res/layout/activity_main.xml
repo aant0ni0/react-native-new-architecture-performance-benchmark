@@ -68,23 +68,7 @@
             android:id="@+id/btnScenario3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:text="Scenario 3: Animations"
-            android:textColor="#ffffff"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            app:backgroundTint="#1a1a2e"
-            app:cornerRadius="8dp"
-            app:elevation="0dp"
-            xmlns:app="http://schemas.android.com/apk/res-auto" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnScenario4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Scenario 4: JS-Native Communication"
             android:textColor="#ffffff"
             android:textSize="15sp"
             android:textStyle="bold"

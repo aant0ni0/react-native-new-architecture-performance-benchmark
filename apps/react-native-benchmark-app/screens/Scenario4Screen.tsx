@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -15,8 +15,8 @@ import {
 
 const SIMPLE_OP_COUNT = 100_000;
 const ARRAY_OP_COUNT = 10_000;
-const ARRAY_SIZE = 1_000;
-const SHARED_ARRAY = Array.from({length: ARRAY_SIZE}, (_, index) => index);
+const ARRAY_SIZES = [1, 10, 100, 1_000, 10_000] as const;
+const DEFAULT_ARRAY_SIZE = 1_000;
 
 type TestStatus = 'Idle' | 'Running' | 'Finished' | 'Stopped';
 
@@ -40,6 +40,7 @@ interface TestCardProps {
   anyRunning: boolean;
   onStart: () => void;
   onStop: () => void;
+  children?: React.ReactNode;
 }
 
 export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
@@ -47,6 +48,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
   const [result1, setResult1] = useState<BenchmarkResult | null>(null);
   const [status2, setStatus2] = useState<TestStatus>('Idle');
   const [result2, setResult2] = useState<BenchmarkResult | null>(null);
+  const [arraySize, setArraySize] = useState<number>(DEFAULT_ARRAY_SIZE);
 
   const statusRef1 = useRef<TestStatus>('Idle');
   const statusRef2 = useRef<TestStatus>('Idle');
@@ -62,6 +64,21 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
   }, []);
 
   const isAnyRunning = status1 === 'Running' || status2 === 'Running';
+  const sharedArray = useMemo(
+    () => Array.from({length: arraySize}, (_, index) => index),
+    [arraySize],
+  );
+
+  const selectArraySize = useCallback((size: number) => {
+    if (statusRef1.current === 'Running' || statusRef2.current === 'Running') {
+      return;
+    }
+
+    setArraySize(size);
+    setResult2(null);
+    statusRef2.current = 'Idle';
+    setStatus2('Idle');
+  }, []);
 
   const runBenchmark = useCallback(
     async (
@@ -137,9 +154,9 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       setStatus2,
       setResult2,
       statusRef2,
-      () => () => nativeSumArray(SHARED_ARRAY),
+      () => () => nativeSumArray(sharedArray),
     );
-  }, [runBenchmark]);
+  }, [runBenchmark, sharedArray]);
 
   const stopTest2 = useCallback(() => {
     if (statusRef2.current !== 'Running') {
@@ -167,14 +184,21 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
 
         <TestCard
           label="Test 2: Complex (array)"
-          description={`${ARRAY_OP_COUNT.toLocaleString()} round-trips, sum of ${ARRAY_SIZE.toLocaleString()} elements`}
+          description={`${ARRAY_OP_COUNT.toLocaleString()} round-trips, sum of ${arraySize.toLocaleString()} elements`}
           status={status2}
           result={result2}
           running={status2 === 'Running'}
           anyRunning={isAnyRunning}
           onStart={startTest2}
           onStop={stopTest2}
-        />
+        >
+          <PayloadSizeSelector
+            sizes={ARRAY_SIZES}
+            selectedSize={arraySize}
+            disabled={isAnyRunning}
+            onSelect={selectArraySize}
+          />
+        </TestCard>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -199,6 +223,7 @@ function TestCard({
   anyRunning,
   onStart,
   onStop,
+  children,
 }: TestCardProps): React.JSX.Element {
   const opsPerSecond =
     result && result.durationMs > 0
@@ -209,6 +234,7 @@ function TestCard({
     <View style={styles.card}>
       <Text style={styles.cardLabel}>{label}</Text>
       <Text style={styles.cardDescription}>{description}</Text>
+      {children}
 
       <View style={styles.statsBlock}>
         <Text style={styles.statText}>
@@ -255,6 +281,50 @@ function TestCard({
   );
 }
 
+function PayloadSizeSelector({
+  sizes,
+  selectedSize,
+  disabled,
+  onSelect,
+}: {
+  sizes: readonly number[];
+  selectedSize: number;
+  disabled: boolean;
+  onSelect: (size: number) => void;
+}): React.JSX.Element {
+  return (
+    <View style={styles.payloadSection}>
+      <Text style={styles.payloadLabel}>Payload size</Text>
+      <View style={styles.payloadOptions}>
+        {sizes.map(size => {
+          const selected = size === selectedSize;
+
+          return (
+            <TouchableOpacity
+              key={size}
+              style={[
+                styles.payloadButton,
+                selected && styles.payloadButtonSelected,
+                disabled && styles.buttonDisabled,
+              ]}
+              onPress={() => onSelect(size)}
+              disabled={disabled}
+              activeOpacity={0.7}>
+              <Text
+                style={[
+                  styles.payloadButtonText,
+                  selected && styles.payloadButtonTextSelected,
+                ]}>
+                {size.toLocaleString()}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -289,6 +359,42 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#888888',
     marginBottom: 8,
+  },
+  payloadSection: {
+    marginBottom: 10,
+  },
+  payloadLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#555555',
+    marginBottom: 6,
+  },
+  payloadOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  payloadButton: {
+    minWidth: 58,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#cfd8dc',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+  },
+  payloadButtonSelected: {
+    backgroundColor: '#1a1a2e',
+    borderColor: '#1a1a2e',
+  },
+  payloadButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#455a64',
+  },
+  payloadButtonTextSelected: {
+    color: '#ffffff',
   },
   statsBlock: {
     gap: 2,
