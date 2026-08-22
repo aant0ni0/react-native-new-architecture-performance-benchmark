@@ -1,27 +1,27 @@
 # Native Android Benchmark App
 
-This project contains the native Android implementation of the benchmark
-scenarios used in the comparative study of:
+This project contains the native Android baseline implementation used in the comparative study of:
 
-- React Native Legacy Architecture
-- React Native New Architecture
-- native Android
+- React Native Legacy Architecture,
+- React Native New Architecture,
+- native Android.
 
-The app focuses on benchmark implementation only. Research data, analysis
-scripts, figures, and paper sources should live outside this application
-repository in the final research artifact.
+The application is part of the replication package for:
+
+**Performance Trade-offs of React Native's New Architecture: A Multi-Device Empirical Comparison with Legacy React Native and Native Android**
+
+Research data, analysis scripts, and generated figures are stored at the repository root outside this application directory.
 
 ## Scenarios
 
-The app currently contains four benchmark scenarios:
+The application contains native Android implementations corresponding to the benchmark scenarios used for cross-technology comparison:
 
-1. real-time UI updates
-2. large-list auto-scroll
-3. UI animations
-4. JS-native style communication reference implemented fully on Android
+1. periodic real-time UI updates,
+2. large-list scrolling,
+3. UI animations,
+4. communication-style workload implemented fully on Android.
 
-Each scenario is implemented as a separate activity under
-`app/src/main/java/com/example/nativebenchmarkapp/`.
+Application cold start is measured externally using Android tooling and therefore does not require a dedicated benchmark screen.
 
 ## Project Structure
 
@@ -33,21 +33,69 @@ gradle/              Gradle wrapper and version catalog
 
 ## Requirements
 
-- Android Studio
-- Android SDK 24+
-- JDK 11
+- Android SDK,
+- JDK compatible with the Android Gradle Plugin.
 
-## Running The App
+Using the JDK bundled with a current Android Studio installation is recommended.
 
-Build and install the debug variant:
+## Release Build
 
-```sh
+The measurements reported in the study were collected from release builds.
+
+From this directory:
+
+```powershell
+.\gradlew.bat assembleRelease
+```
+
+The generated APK is written to:
+
+```text
+app/build/outputs/apk/release/
+```
+
+The release-build procedure was verified from a clean repository worktree on Windows.
+
+The public repository does not include a private release signing key. Consequently, a locally generated release artifact may be named:
+
+```text
+app-release-unsigned.apk
+```
+
+Signing is not required to inspect or compile the benchmark source code, but installation of an unsigned APK requires the usual local Android signing/build workflow.
+
+## Development Build
+
+For development-only use, the debug variant can be built or installed with:
+
+```powershell
+.\gradlew.bat assembleDebug
 .\gradlew.bat installDebug
 ```
 
-## Notes For Public Release
+These debug commands are not the measurement workflow used for the reported benchmark results.
 
-- Local IDE files and machine-specific settings are intentionally ignored.
-- No release keystore is included in the public-ready project state.
-- Benchmark output files should be reviewed later and moved into the final
-  research-artifact structure if they are intended to be published as raw data.
+## Measurement Data
+
+Canonical measurement datasets are stored at the repository root under:
+
+```text
+data/moto-g72/
+data/pixel-4a/
+```
+
+See the root `data/README.md` for details about canonical datasets, validation runs, and retained raw/superseded measurements.
+
+## Analysis
+
+Statistical analysis and figure-generation scripts are stored at the repository root under:
+
+```text
+analysis/
+```
+
+Generated publication figures are stored under:
+
+```text
+figures/
+```

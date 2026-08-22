@@ -1,14 +1,17 @@
 # React Native New Architecture Performance Benchmark
 
-This repository accompanies the paper **"React Native New Architecture Performance: An Empirical Comparison with Legacy Architecture and Native Android"**.
+This repository contains the replication package for the empirical study:
 
-It contains:
+**Performance Trade-offs of React Native's New Architecture: A Multi-Device Empirical Comparison with Legacy React Native and Native Android**
 
-- a React Native benchmark application covering the Legacy Architecture and the New Architecture,
-- a native Android benchmark application used as the baseline implementation,
-- curated CSV result tables for the benchmark scenarios reported in the study.
+The artifact provides:
 
-The repository is intentionally focused on the benchmark artifact itself. Manuscript sources, intermediate spreadsheets, and exploratory analysis material are maintained separately.
+- the React Native benchmark application used for both Legacy and New Architecture measurements,
+- a native Android baseline application,
+- canonical measurement datasets collected on two physical Android devices,
+- preserved validation and superseded measurements for provenance,
+- reproducible statistical analysis scripts,
+- publication figures generated directly from the repository data.
 
 ## Repository Structure
 
@@ -17,90 +20,215 @@ react-native-new-architecture-performance-benchmark/
   apps/
     react-native-benchmark-app/
     native-android-benchmark-app/
+
   data/
     README.md
+    moto-g72/
+      raw/
+      s1_latency.csv
+      s2_scroll.csv
+      s3_js_driver.csv
+      s3_native_driver.csv
+      s4_array.csv
+      s4_scalar.csv
+      s5_startup.csv
+
+    pixel-4a/
+      raw/
+      s1_latency.csv
+      s2_scroll.csv
+      s3_js_driver.csv
+      s3_native_driver.csv
+      s4_array.csv
+      s4_scalar.csv
+      s4_scalar_validation.csv
+      s5_startup.csv
+
+  analysis/
+    README.md
+    reproduce_analysis.py
+    make_figures.py
+    requirements.txt
     results/
-      s1_latency_results.csv
-      s2_scroll_results.csv
-      s3_js_driver_results.csv
-      s3_native_driver_results.csv
-      s4_scalar_call_results.csv
-      s4_array_call_results.csv
-      s5_startup_results.csv
+
+  figures/
+  perfetto/
+
   LICENSE
   README.md
 ```
 
 ## Benchmark Scope
 
-The benchmark suite covers five scenarios:
+The benchmark suite evaluates five scenarios:
 
-1. real-time UI updates,
-2. large-list auto-scroll,
+1. periodic real-time UI updates,
+2. large-list scrolling,
 3. UI animations,
 4. JavaScript-native communication,
-5. application startup time.
+5. application cold start.
 
-Scenario 3 is provided in two result variants:
+Scenario 3 evaluates both JavaScript-driven and native-driver animations.
 
-- JS-driven animations,
-- native-driver animations.
+Scenario 4 evaluates both scalar calls and array payloads. The array benchmark uses payload sizes of 1, 10, 100, 1,000, and 10,000 elements.
 
-Scenario 4 is provided in two result variants:
+## Devices
 
-- scalar/simple calls,
-- array/complex calls.
+Measurements are provided for two physical Android devices:
+
+- Motorola Moto G72 - 120 Hz display,
+- Google Pixel 4a - 60 Hz display, Android 13.
+
+The devices are treated as separate replication contexts in the statistical analysis rather than pooling their measurements into one sample.
+
+See `data/README.md` for dataset-level details, canonical-series selection, validation measurements, and provenance information.
 
 ## Applications
 
-### React Native Benchmark App
+### React Native benchmark application
 
-Location: `apps/react-native-benchmark-app/`
+Location:
 
-This application contains the React Native implementations used for the Legacy Architecture and New Architecture measurements. It also includes the native Android modules used by the React Native benchmark scenarios.
+```text
+apps/react-native-benchmark-app/
+```
 
-The local application README contains implementation-specific details and run instructions.
+The same application contains the implementations used for the React Native Legacy Architecture and New Architecture experiments.
 
-### Native Android Benchmark App
+Architecture selection is controlled by the Android React Native configuration and the corresponding JavaScript communication-module selection. See the application README for details.
 
-Location: `apps/native-android-benchmark-app/`
+### Native Android benchmark application
 
-This application contains the native Android baseline implementation used in the comparative study.
+Location:
 
-The local application README contains implementation-specific details and run instructions.
+```text
+apps/native-android-benchmark-app/
+```
 
-## Results Data
+This project provides the native Android baseline used in the comparative experiments.
 
-Location: `data/results/`
+## Building the Benchmark Applications
 
-The CSV files contain curated scenario result tables prepared for repository publication.
+The release-build procedures below were verified from a clean repository worktree on Windows.
 
-Important formatting note:
+### Requirements
 
-- files use the semicolon (`;`) as the column delimiter,
-- decimal values follow the spreadsheet locale and may use a comma as the decimal separator.
+For the React Native application:
 
-A short description of every CSV file is provided in `data/README.md`.
+- Node.js 20 or newer,
+- npm,
+- Android SDK,
+- JDK compatible with the Android Gradle Plugin.
 
-## Reproducing the Applications
+For the native Android application:
 
-The benchmark applications can be explored independently from their subdirectories.
+- Android SDK,
+- JDK compatible with the Android Gradle Plugin.
 
-### React Native app
+Using the JDK bundled with a current Android Studio installation is recommended.
 
-```sh
+### React Native release build
+
+```powershell
 cd apps/react-native-benchmark-app
-npm install
-npm start
-npm run android
+npm ci
+cd android
+.\gradlew.bat app:assembleRelease
 ```
 
-### Native Android app
+The APK is generated under:
 
-```sh
+```text
+apps/react-native-benchmark-app/android/app/build/outputs/apk/release/
+```
+
+The benchmark measurements reported in the study were collected using release builds rather than the default React Native debug workflow.
+
+### Native Android release build
+
+```powershell
 cd apps/native-android-benchmark-app
-.\gradlew.bat installDebug
+.\gradlew.bat assembleRelease
 ```
+
+The APK is generated under:
+
+```text
+apps/native-android-benchmark-app/app/build/outputs/apk/release/
+```
+
+The public repository does not contain a private release signing key, so a locally built native release APK may be unsigned.
+
+## Measurement Data
+
+Canonical datasets are located under:
+
+```text
+data/moto-g72/
+data/pixel-4a/
+```
+
+CSV files use a semicolon (`;`) delimiter.
+
+Some source measurements use a comma as the decimal separator. The provided analysis scripts normalize these values automatically.
+
+Directories named `raw/` contain earlier or superseded measurement series retained for transparency and provenance. They should not be pooled automatically with the canonical datasets.
+
+See `data/README.md` for detailed rules governing Scenario 4 validation and clean-build repetitions.
+
+## Reproducing the Statistical Analysis
+
+Python dependencies are listed in:
+
+```text
+analysis/requirements.txt
+```
+
+Creating an isolated virtual environment is recommended.
+
+On Windows:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r .\analysis\requirements.txt
+```
+
+Run the statistical analysis from the repository root:
+
+```powershell
+python .\analysis\reproduce_analysis.py
+```
+
+Generated tables are written to:
+
+```text
+analysis/results/
+```
+
+Generate the publication figures with:
+
+```powershell
+python .\analysis\make_figures.py
+```
+
+The resulting PDF and PNG figures are written to:
+
+```text
+figures/
+```
+
+## Reproducibility Notes
+
+The repository separates:
+
+- canonical measurements used in the primary analysis,
+- independent validation measurements,
+- superseded/raw measurements retained for provenance,
+- derived statistical tables,
+- generated figures.
+
+This structure is intended to make the exact analysis input explicit and to prevent validation or historical measurements from being accidentally pooled with the primary datasets.
 
 ## License
 
