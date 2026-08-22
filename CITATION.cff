@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this replication package, please cite the associated study and this repository."
+title: "React Native New Architecture Performance Benchmark"
+type: software
+authors:
+  - family-names: "Michalczak"
+    given-names: "Antoni"
+    email: "antoni0michalczak@gmail.com"
+  - family-names: "Krużel"
+    given-names: "Filip"
+    email: "filip.kruzel@pk.edu.pl"
+    orcid: "https://orcid.org/0000-0002-3462-9144"
+contact:
+  - family-names: "Krużel"
+    given-names: "Filip"
+    email: "filip.kruzel@pk.edu.pl"
+    orcid: "https://orcid.org/0000-0002-3462-9144"
+repository-code: "https://github.com/aant0ni0/react-native-new-architecture-performance-benchmark"
+license: MIT
+keywords:
+  - React Native
+  - New Architecture
+  - Legacy Architecture
+  - Android
+  - performance
+  - benchmarking
+  - empirical software engineering
+abstract: >-
+  Replication package for a multi-device empirical comparison of React Native
+  Legacy Architecture, React Native New Architecture, and native Android.
+  The repository contains benchmark applications, canonical measurement data,
+  validation and provenance data, reproducible analysis scripts, and generated
+  publication figures.
