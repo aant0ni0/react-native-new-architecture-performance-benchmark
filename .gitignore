@@ -16,3 +16,8 @@ apps/**/coverage/
 apps/**/Pods/
 apps/**/local.properties
 apps/**/android/local.properties
+
+.venv/
+__pycache__/
+*.pyc
+.DS_Store

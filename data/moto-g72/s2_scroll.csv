@@ -4,13 +4,30 @@ RN;Legacy;Large list scroll;1000;2;Finished;11;60009;18;20;190,5;3529;199;5,64;1
 RN;Legacy;Large list scroll;1000;3;Finished;11;60017;17;20;190,2;3534;193;5,46;1714;48,5;11;22;24;29;0;191;22;0
 RN;Legacy;Large list scroll;1000;4;Finished;11;60017;18;21;191,1;3522;209;5,93;1774;50,37;11;22;25;30;2;209;33;0
 RN;Legacy;Large list scroll;1000;5;Finished;11;60004;17;22;190,7;3597;146;4,06;1694;47,09;10;22;23;29;0;144;21;0
+RN;Legacy;Large list scroll;1000;6;Finished;11;60012;18;21;190,4;3541;187;5,28;1728;48,8;11;22;24;29;0;186;22;0
+RN;Legacy;Large list scroll;1000;7;Finished;11;60018;17;20;190,9;3518;205;5,83;1765;50,17;11;22;25;30;1;205;28;0
+RN;Legacy;Large list scroll;1000;8;Finished;11;60005;18;22;191,3;3588;154;4,29;1702;47,44;10;22;23;29;0;153;20;0
+RN;Legacy;Large list scroll;1000;9;Finished;11;60016;18;21;190,1;3496;197;5,64;1744;49,89;11;22;25;29;0;196;24;0
+RN;Legacy;Large list scroll;1000;10;Finished;11;60010;17;20;190,6;3563;176;4,94;1719;48,25;11;22;24;29;0;175;21;0
+;;;;;;;;;;;;;;;;;;;;;;;
 RN;NewArch;Large list scroll;1000;1;Finished;11;60006;19;22;229,4;5298;91;1,72;2875;54,27;12;21;24;30;0;91;9;0
 RN;NewArch;Large list scroll;1000;2;Finished;11;60011;18;23;230;5307;86;1,62;2814;53,02;12;21;23;29;2;86;8;0
 RN;NewArch;Large list scroll;1000;3;Finished;11;60009;17;23;232,2;5294;89;1,68;2859;54;12;21;24;30;1;89;7;0
 RN;NewArch;Large list scroll;1000;4;Finished;11;60004;18;21;230;5276;105;1,99;2796;52,99;12;21;24;30;0;105;12;0
 RN;NewArch;Large list scroll;1000;5;Finished;11;60009;18;22;230,5;5283;101;1,91;2820;53,38;12;21;24;30;0;101;13;0
+RN;NewArch;Large list scroll;1000;6;Finished;11;60008;18;22;230,8;5291;94;1,78;2837;53,62;12;21;24;30;0;94;10;0
+RN;NewArch;Large list scroll;1000;7;Finished;11;60012;19;23;231,4;5302;88;1,66;2862;53,98;12;21;23;29;1;88;8;0
+RN;NewArch;Large list scroll;1000;8;Finished;11;60005;18;22;229,9;5279;103;1,95;2804;53,12;12;21;24;30;0;103;12;0
+RN;NewArch;Large list scroll;1000;9;Finished;11;60010;17;23;231,7;5296;90;1,7;2851;53,83;12;21;24;30;2;90;9;0
+RN;NewArch;Large list scroll;1000;10;Finished;11;60007;18;21;230,2;5288;99;1,87;2817;53,27;12;21;24;30;0;99;11;0
+;;;;;;;;;;;;;;;;;;;;;;;
 Native;Native;Large list scroll;1000;1;Finished;11;60011;8;8;127,1;3634;2;0,06;206;5,67;9;10;10;11;0;2;0;0
 Native;Native;Large list scroll;1000;2;Finished;11;60013;7;8;127;3632;1;0,03;199;5,48;9;10;10;11;0;1;0;0
 Native;Native;Large list scroll;1000;3;Finished;11;60014;7;8;127,3;3637;2;0,05;378;10,39;9;10;12;14;0;2;0;0
 Native;Native;Large list scroll;1000;4;Finished;11;60005;7;7;126,9;3636;1;0,03;212;5,83;9;10;10;11;0;1;0;0
 Native;Native;Large list scroll;1000;5;Finished;11;60007;8;9;127,9;3630;5;0,14;611;16,83;9;12;13;14;0;3;2;0
+Native;Native;Large list scroll;1000;6;Finished;11;60009;7;8;127,2;3635;2;0,06;224;6,16;9;10;10;11;0;2;0;0
+Native;Native;Large list scroll;1000;7;Finished;11;60012;8;8;127,5;3633;1;0,03;318;8,75;9;10;12;13;0;1;0;0
+Native;Native;Large list scroll;1000;8;Finished;11;60006;7;7;126,8;3638;4;0,11;542;14,9;9;12;13;14;0;3;1;0
+Native;Native;Large list scroll;1000;9;Finished;11;60015;8;9;127,7;3631;2;0,06;205;5,65;9;10;10;11;0;2;0;0
+Native;Native;Large list scroll;1000;10;Finished;11;60008;7;8;127;3636;3;0,08;389;10,7;9;11;12;14;0;2;1;0
