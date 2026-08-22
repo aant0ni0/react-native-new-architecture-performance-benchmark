@@ -77,7 +77,7 @@ Scenario 4 evaluates both scalar calls and array payloads. The array benchmark u
 Measurements are provided for two physical Android devices:
 
 - Motorola Moto G72 - 120 Hz display,
-- Google Pixel 4a - 60 Hz display.
+- Google Pixel 4a - 60 Hz display, Android 13.
 
 The devices are treated as separate replication contexts in the statistical analysis rather than pooling their measurements into one sample.
 
