@@ -16,6 +16,14 @@ contact:
     given-names: "Filip"
     email: "filip.kruzel@pk.edu.pl"
     orcid: "https://orcid.org/0000-0002-3462-9144"
+date-released: "2026-08-23"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22071872"
+    description: "Concept DOI for all archived versions of RNArchBench."
+  - type: doi
+    value: "10.5281/zenodo.22071873"
+    description: "Version DOI for the archived RNArchBench v1.0.2 release."
 repository-code: "https://github.com/aant0ni0/react-native-new-architecture-performance-benchmark"
 license: MIT
 keywords:
