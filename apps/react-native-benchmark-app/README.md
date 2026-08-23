@@ -1,66 +1,69 @@
-# React Native Benchmark App
+# RNArchBench — React Native Benchmark App
 
-This project contains the React Native implementation of the benchmark scenarios used in the comparative study of:
-
-- React Native Legacy Architecture,
-- React Native New Architecture,
-- native Android.
-
-The application is part of the replication package for:
-
-**Performance Trade-offs of React Native's New Architecture: A Multi-Device Empirical Comparison with Legacy React Native and Native Android**
-
-Research data, analysis scripts, and generated figures are stored at the repository root outside this application directory.
+This application implements the React Native portion of RNArchBench for Legacy and New Architecture builds.
 
 ## Scenarios
 
-The application contains four interactive benchmark scenarios:
-
-1. periodic real-time UI updates,
+1. periodic UI updates,
 2. large-list scrolling,
 3. UI animations,
 4. JavaScript-native communication.
 
-Application cold start is measured externally using Android tooling and therefore does not require a dedicated benchmark screen.
+Cold start is measured externally with Android tooling.
 
-## Project Structure
+### Scenario 3
 
-```text
-android/     Android host app and native benchmark modules
-ios/         iOS host app
-modules/     JavaScript wrappers around native communication modules
-screens/     Benchmark scenario screens
-specs/       TurboModule specs used by React Native codegen
+The animation screen provides a runtime selector for:
+
+- `JS-driven` (`useNativeDriver: false`),
+- `Native-driven` (`useNativeDriver: true`).
+
+The driver cannot be changed while a benchmark run is active.
+
+### Scenario 4
+
+The communication screen evaluates:
+
+- scalar asynchronous calls,
+- array/sum calls with payload sizes 1, 10, 100, 1,000, and 10,000.
+
+The payload is selected at runtime and prepared outside the timed round-trip loop.
+
+## Architecture Switching
+
+Legacy/New Architecture changes require a rebuild. Do not edit the two configuration points independently.
+
+From the **repository root**, use:
+
+```powershell
+python .\scripts\configure_rn_architecture.py legacy
 ```
+
+or:
+
+```powershell
+python .\scripts\configure_rn_architecture.py new
+```
+
+Check consistency with:
+
+```powershell
+python .\scripts\configure_rn_architecture.py check
+```
+
+The helper keeps these values aligned:
+
+- `android/gradle.properties`: `newArchEnabled`,
+- `modules/CommunicationModule.ts`: `IS_LEGACY`.
 
 ## Requirements
 
-- Node.js,
+- Node.js 20 or newer,
 - npm,
 - Android SDK,
 - JDK compatible with the Android Gradle Plugin.
 
-The Android benchmark is the configuration used in the reported study.
-
-## Architecture Switching
-
-The React Native Legacy Architecture and New Architecture configurations must be kept consistent in both:
-
-- `android/gradle.properties`,
-- `modules/CommunicationModule.ts`.
-
-Use:
-
-- `newArchEnabled=false` with `IS_LEGACY = true`,
-- `newArchEnabled=true` with `IS_LEGACY = false`.
-
-This ensures that the Android host configuration and the JavaScript-side communication-module selection correspond to the same architecture.
-
 ## Release Build
-
-The measurements reported in the study were collected from release builds rather than the default React Native debug workflow.
-
-From this directory:
 
 ```powershell
 npm ci
@@ -68,54 +71,32 @@ cd android
 .\gradlew.bat app:assembleRelease
 ```
 
-The generated APK is written to:
+Output:
 
 ```text
 android/app/build/outputs/apk/release/
 ```
 
-The release-build procedure was verified from a clean repository worktree on Windows.
+The historical measurements distributed with RNArchBench were collected from release builds.
 
-For an installed release variant, Gradle also exposes:
+## Development
 
-```powershell
-.\gradlew.bat app:installRelease
-```
-
-provided that an Android device or emulator is connected and the build is installable in the local environment.
-
-## Development Workflow
-
-For interactive development, Metro and the standard React Native tooling can still be used:
+For interactive development:
 
 ```powershell
 npm start
 npm run android
 ```
 
-These commands are intended for development and are not the measurement workflow used for the reported benchmark results.
+These commands are not the measurement workflow used for the frozen benchmark datasets.
 
-## Measurement Data
+## Data and Analysis
 
-Canonical measurement datasets are stored at the repository root under:
-
-```text
-data/moto-g72/
-data/pixel-4a/
-```
-
-See the root `data/README.md` for details about canonical datasets, validation runs, and retained raw/superseded measurements.
-
-## Analysis
-
-Statistical analysis and figure-generation scripts are stored at the repository root under:
+Canonical data, provenance notes, analysis scripts, and figures live at the repository root:
 
 ```text
+data/
 analysis/
-```
-
-Generated publication figures are stored under:
-
-```text
 figures/
+REPLICATION_NOTES.md
 ```
