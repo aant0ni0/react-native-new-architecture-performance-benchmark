@@ -217,9 +217,19 @@ The expected filenames and SHA-256 checksums are listed in:
 perfetto/SHA256SUMS.txt
 ```
 
+## Archived Release and DOI
+
+The exact RNArchBench v1.0.2 artifact prepared for archival and the SoftwareX submission is preserved on Zenodo:
+
+- Version DOI (v1.0.2): [10.5281/zenodo.22071873](https://doi.org/10.5281/zenodo.22071873)
+- Concept DOI (all versions): [10.5281/zenodo.22071872](https://doi.org/10.5281/zenodo.22071872)
+
+For reproducibility, cite the version DOI when referring to the exact artifact used in a study. The concept DOI may be used when referring to RNArchBench as an evolving software project.
+
 ## Citation
 
-Citation metadata are provided in `CITATION.cff`.
+Citation metadata are provided in `CITATION.cff`. For RNArchBench v1.0.2, the archived version DOI is [10.5281/zenodo.22071873](https://doi.org/10.5281/zenodo.22071873).
+
 
 ## License
 
