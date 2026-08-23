@@ -27,9 +27,9 @@ S2_RN_Legacy_scroll_motoG72.pftrace
 
 Perfetto trace files are large binary artifacts and are not suitable for inclusion in the standard Git repository history.
 
-The repository therefore contains only trace documentation and, once the archive is finalized, a checksum manifest.
+The repository therefore contains trace documentation and the finalized checksum manifest `SHA256SUMS.txt`.
 
-The binary trace files should be distributed separately through the associated research-artifact archive or release storage.
+The binary trace files are distributed separately through the associated GitHub release/research-artifact storage.
 
 ## Scope
 

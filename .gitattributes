@@ -1,0 +1,2 @@
+# Keep generated analysis tables stable across Windows/Linux checkouts.
+analysis/results/*.csv text eol=lf

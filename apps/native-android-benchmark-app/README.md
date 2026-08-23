@@ -53,4 +53,5 @@ data/
 analysis/
 figures/
 REPLICATION_NOTES.md
+ACQUISITION_GUIDE.md
 ```

@@ -29,6 +29,7 @@ react-native-new-architecture-performance-benchmark/
     reproduce_analysis.py
     make_figures.py
     requirements.txt
+    requirements-lock.txt
   data/
     moto-g72/
     pixel-4a/
@@ -36,6 +37,7 @@ react-native-new-architecture-performance-benchmark/
   figures/
   perfetto/
   scripts/
+  ACQUISITION_GUIDE.md
   REPLICATION_NOTES.md
   CITATION.cff
   LICENSE
@@ -73,7 +75,7 @@ data/moto-g72/
 data/pixel-4a/
 ```
 
-See `data/README.md` and `REPLICATION_NOTES.md` before reusing or extending the data.
+See `data/README.md`, `REPLICATION_NOTES.md`, and `ACQUISITION_GUIDE.md` before reusing or extending the data.
 
 ## Requirements
 
@@ -132,6 +134,12 @@ apps/react-native-benchmark-app/android/app/build/outputs/apk/release/
 
 The reported benchmark measurements were collected from release variants, not from the standard React Native debug workflow.
 
+The public React Native `release` build type uses the Android debug signing configuration solely so that a locally generated replication APK can be installed without distributing a private production signing key. The build type itself remains `release`.
+
+### Windows path-length note
+
+React Native New Architecture code generation may exceed the Windows Ninja/CMake 260-character path limit when the repository lives under a long path. If this occurs, build the same revision from a short ASCII-only path such as `C:\r` or `C:\RNArchBench`.
+
 ## Build the Native Android Benchmark
 
 ```powershell
@@ -170,7 +178,7 @@ Create an isolated Python environment:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install -r .\analysis\requirements.txt
+python -m pip install -r .\analysis\requirements-lock.txt
 ```
 
 Run:
@@ -187,13 +195,15 @@ analysis/results/
 figures/
 ```
 
-The analysis scripts accept source CSVs that use either decimal points or decimal commas.
+The analysis scripts accept source CSVs that use either decimal points or decimal commas. `analysis/requirements-lock.txt` pins the direct analysis dependencies to a known-good v1.0.2 audit environment; `analysis/requirements.txt` retains the looser minimum-version specification.
+
+Primary Legacy-vs-New comparisons report permutation-based Mann-Whitney U p-values, Cliff's delta, Benjamini-Hochberg-adjusted q-values, and a deterministic bootstrap 95% confidence interval for the Legacy-minus-New median difference. For S3, the inferential endpoints are restricted to reproducible graphics-layer metrics; the retained one-second callback-rate summary and CPU/RAM fields are descriptive.
 
 ## Reproducibility Boundary
 
-The canonical CSV datasets and the statistical/figure-generation pipeline are intended to be exactly reproducible from this repository.
+The canonical CSV datasets and numerical analysis are intended to be exactly reproducible from this repository when the pinned analysis environment is used. Publication figures are reproducible in content, but binary PDF/PNG bytes can vary across Matplotlib/platform versions because of rendering and file metadata.
 
-Some historical measurement-acquisition intermediates were not retained, including complete per-second S3 callback samples and the complete historical ADB orchestration used during the original experiment. These limitations are documented explicitly in `REPLICATION_NOTES.md`.
+Some historical measurement-acquisition intermediates were not retained, including complete per-second S3 callback samples and the complete historical ADB orchestration used during the original experiment. These limitations are documented explicitly in `REPLICATION_NOTES.md`. A prospective workflow for new acquisitions is provided in `ACQUISITION_GUIDE.md`.
 
 Usability improvements added after the historical measurements, such as runtime S3/S4 selectors and architecture-configuration utilities, improve future replication but do not retroactively alter the provenance of the frozen datasets.
 
