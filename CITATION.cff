@@ -1,7 +1,8 @@
 cff-version: 1.2.0
-message: "If you use this replication package, please cite the associated study and this repository."
-title: "React Native New Architecture Performance Benchmark"
+message: "If you use RNArchBench, please cite the software and the associated study."
+title: "RNArchBench: A Reproducible Benchmark and Replication Suite for React Native Architecture Performance"
 type: software
+version: "1.0.1"
 authors:
   - family-names: "Michalczak"
     given-names: "Antoni"
@@ -24,10 +25,10 @@ keywords:
   - Android
   - performance
   - benchmarking
-  - empirical software engineering
+  - reproducibility
 abstract: >-
-  Replication package for a multi-device empirical comparison of React Native
-  Legacy Architecture, React Native New Architecture, and native Android.
-  The repository contains benchmark applications, canonical measurement data,
-  validation and provenance data, reproducible analysis scripts, and generated
-  publication figures.
+  RNArchBench is an open benchmark and replication suite for evaluating
+  performance trade-offs between React Native Legacy Architecture, React Native
+  New Architecture, and native Android. It includes benchmark applications,
+  frozen canonical and provenance datasets, reproducible analysis scripts,
+  publication-figure generation, and utilities for prospective replication.

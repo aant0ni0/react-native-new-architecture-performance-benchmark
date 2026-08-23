@@ -19,7 +19,6 @@ const BASE_ANIM_Y_MS = 900;
 const BASE_ANIM_SCALE_MS = 1500;
 const BASE_ANIM_ROT_MS = 2000;
 const ANIM_STEP_MS = 50;
-const USE_NATIVE_DRIVER = false;
 const BOX_COLORS = [
   '#e53935', '#1e88e5', '#43a047',
   '#fb8c00', '#8e24aa', '#00acc1',
@@ -35,6 +34,7 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
   const [status, setStatus] = useState<TestStatus>('Idle');
   const [measuredDurationMs, setMeasuredDurationMs] = useState<number | null>(null);
   const [jsFps, setJsFps] = useState<number | null>(null);
+  const [useNativeDriver, setUseNativeDriver] = useState(false);
 
   const statusRef = useRef<TestStatus>('Idle');
   const measurementStartRef = useRef(0);
@@ -44,18 +44,28 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
   const fpsRafRef = useRef<number | null>(null);
   const fpsIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const animX = useRef(
-    Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
-  ).current;
-  const animY = useRef(
-    Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
-  ).current;
-  const animScale = useRef(
-    Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
-  ).current;
-  const animRot = useRef(
-    Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
-  ).current;
+  const jsDriverValues = useRef({
+    x: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+    y: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+    scale: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+    rot: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+  }).current;
+
+  const nativeDriverValues = useRef({
+    x: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+    y: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+    scale: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+    rot: Array.from({length: BOX_COUNT}, () => new Animated.Value(0)),
+  }).current;
+
+  // React Native Animated.Value instances should not be mixed between JS and
+  // native drivers. Keep a separate value bank for each driver so the runtime
+  // selector never reuses the same Animated.Value with both mechanisms.
+  const activeValues = useNativeDriver ? nativeDriverValues : jsDriverValues;
+  const animX = activeValues.x;
+  const animY = activeValues.y;
+  const animScale = activeValues.scale;
+  const animRot = activeValues.rot;
 
   const runningAnimsRef = useRef<Animated.CompositeAnimation[]>([]);
 
@@ -139,13 +149,13 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
             toValue: 1,
             duration: durationX,
             easing: easeInOut,
-            useNativeDriver: USE_NATIVE_DRIVER,
+            useNativeDriver,
           }),
           Animated.timing(animX[index], {
             toValue: -1,
             duration: durationX,
             easing: easeInOut,
-            useNativeDriver: USE_NATIVE_DRIVER,
+            useNativeDriver,
           }),
         ]),
       );
@@ -156,13 +166,13 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
             toValue: 1,
             duration: durationY,
             easing: easeInOut,
-            useNativeDriver: USE_NATIVE_DRIVER,
+            useNativeDriver,
           }),
           Animated.timing(animY[index], {
             toValue: -1,
             duration: durationY,
             easing: easeInOut,
-            useNativeDriver: USE_NATIVE_DRIVER,
+            useNativeDriver,
           }),
         ]),
       );
@@ -173,13 +183,13 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
             toValue: 1,
             duration: durationScale,
             easing: easeInOut,
-            useNativeDriver: USE_NATIVE_DRIVER,
+            useNativeDriver,
           }),
           Animated.timing(animScale[index], {
             toValue: 0,
             duration: durationScale,
             easing: easeInOut,
-            useNativeDriver: USE_NATIVE_DRIVER,
+            useNativeDriver,
           }),
         ]),
       );
@@ -189,7 +199,7 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
           toValue: 1,
           duration: durationRotation,
           easing: Easing.linear,
-          useNativeDriver: USE_NATIVE_DRIVER,
+          useNativeDriver,
         }),
       );
 
@@ -206,7 +216,7 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
       () => finishTest(false),
       MEASUREMENT_DURATION_MS,
     );
-  }, [animRot, animScale, animX, animY, finishTest, startFpsMeasurement, stopAnimations]);
+  }, [animRot, animScale, animX, animY, finishTest, startFpsMeasurement, stopAnimations, useNativeDriver]);
 
   useEffect(
     () => () => {
@@ -233,6 +243,12 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
         <Text style={styles.statusText}>
           Animated Boxes: <Text style={styles.statusValue}>{BOX_COUNT}</Text>
         </Text>
+        <Text style={styles.statusText}>
+          Driver:{' '}
+          <Text style={styles.statusValue}>
+            {useNativeDriver ? 'Native-driven' : 'JS-driven'}
+          </Text>
+        </Text>
         {(isRunning || jsFps !== null) && (
           <Text style={styles.statusText}>
             JS FPS: <Text style={styles.statusValue}>{jsFps ?? '...'}</Text>
@@ -246,6 +262,45 @@ export default function Scenario3Screen({onBack}: Props): React.JSX.Element {
       </View>
 
       <View style={styles.controlsSection}>
+        <View style={styles.driverSection}>
+          <Text style={styles.driverLabel}>Animation driver</Text>
+          <View style={styles.driverButtonRow}>
+            <TouchableOpacity
+              style={[
+                styles.driverButton,
+                !useNativeDriver && styles.driverButtonSelected,
+                isRunning && styles.buttonDisabled,
+              ]}
+              onPress={() => setUseNativeDriver(false)}
+              disabled={isRunning}
+              activeOpacity={0.7}>
+              <Text
+                style={[
+                  styles.driverButtonText,
+                  !useNativeDriver && styles.driverButtonTextSelected,
+                ]}>
+                JS-driven
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.driverButton,
+                useNativeDriver && styles.driverButtonSelected,
+                isRunning && styles.buttonDisabled,
+              ]}
+              onPress={() => setUseNativeDriver(true)}
+              disabled={isRunning}
+              activeOpacity={0.7}>
+              <Text
+                style={[
+                  styles.driverButtonText,
+                  useNativeDriver && styles.driverButtonTextSelected,
+                ]}>
+                Native-driven
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         <View style={styles.buttonRow}>
           <TouchableOpacity
             style={[styles.button, styles.startButton, isRunning && styles.buttonDisabled]}
@@ -349,6 +404,39 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
     gap: 8,
+  },
+  driverSection: {
+    gap: 6,
+  },
+  driverLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#555555',
+  },
+  driverButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  driverButton: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#cfd8dc',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+  },
+  driverButtonSelected: {
+    borderColor: '#1a1a2e',
+    backgroundColor: '#1a1a2e',
+  },
+  driverButtonText: {
+    color: '#455a64',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  driverButtonTextSelected: {
+    color: '#ffffff',
   },
   buttonRow: {
     flexDirection: 'row',

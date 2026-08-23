@@ -1,17 +1,21 @@
-# React Native New Architecture Performance Benchmark
+# RNArchBench
 
-This repository contains the replication package for the empirical study:
+**RNArchBench** is an open benchmark and replication suite for evaluating performance trade-offs between React Native Legacy Architecture, React Native New Architecture, and native Android.
+
+The repository also contains the frozen measurement and analysis artifact used in the empirical study:
 
 **Performance Trade-offs of React Native's New Architecture: A Multi-Device Empirical Comparison with Legacy React Native and Native Android**
 
-The artifact provides:
+RNArchBench provides:
 
-- the React Native benchmark application used for both Legacy and New Architecture measurements,
-- a native Android baseline application,
-- canonical measurement datasets collected on two physical Android devices,
-- preserved validation and superseded measurements for provenance,
-- reproducible statistical analysis scripts,
-- publication figures generated directly from the repository data.
+- a React Native benchmark application supporting Legacy and New Architecture builds,
+- a native Android baseline for the cross-technology UI scenarios,
+- five benchmark scenarios, including JS-native communication for React Native,
+- canonical datasets for Motorola Moto G72 and Google Pixel 4a,
+- retained validation and superseded datasets for provenance,
+- reproducible Python analysis and figure-generation scripts,
+- supplementary Perfetto trace metadata and checksums,
+- utilities for architecture configuration and environment capture.
 
 ## Repository Structure
 
@@ -20,146 +24,47 @@ react-native-new-architecture-performance-benchmark/
   apps/
     react-native-benchmark-app/
     native-android-benchmark-app/
-
-  data/
-    README.md
-    moto-g72/
-      raw/
-      s1_latency.csv
-      s2_scroll.csv
-      s3_js_driver.csv
-      s3_native_driver.csv
-      s4_array.csv
-      s4_scalar.csv
-      s5_startup.csv
-
-    pixel-4a/
-      raw/
-      s1_latency.csv
-      s2_scroll.csv
-      s3_js_driver.csv
-      s3_native_driver.csv
-      s4_array.csv
-      s4_scalar.csv
-      s4_scalar_validation.csv
-      s5_startup.csv
-
   analysis/
-    README.md
+    results/
     reproduce_analysis.py
     make_figures.py
     requirements.txt
-    results/
-
+  data/
+    moto-g72/
+    pixel-4a/
+    README.md
   figures/
   perfetto/
-
+  scripts/
+  REPLICATION_NOTES.md
+  CITATION.cff
   LICENSE
+  Licence.txt
   README.md
 ```
 
-## Benchmark Scope
+## Benchmark Scenarios
 
-The benchmark suite evaluates five scenarios:
+| Scenario | React Native | Native Android | Purpose |
+|---|---:|---:|---|
+| S1 Periodic UI updates | Yes | Yes | Update-to-next-frame-callback delay |
+| S2 Large-list scrolling | Yes | Yes | Rendering smoothness, jank, CPU and memory |
+| S3 UI animations | Yes | Yes | JS-driven and native-driven animation behavior |
+| S4 JS-native communication | Yes | No | Scalar and array round-trip throughput |
+| S5 Cold start | External Android tooling | External Android tooling | Application startup latency |
 
-1. periodic real-time UI updates,
-2. large-list scrolling,
-3. UI animations,
-4. JavaScript-native communication,
-5. application cold start.
+S3 exposes a runtime selector for JS-driven versus native-driven animation execution.
 
-Scenario 3 evaluates both JavaScript-driven and native-driver animations.
+S4 exposes runtime payload sizes of 1, 10, 100, 1,000, and 10,000 elements. A native Android S4 is intentionally not provided because the workload specifically evaluates the JavaScript-native boundary.
 
-Scenario 4 evaluates both scalar calls and array payloads. The array benchmark uses payload sizes of 1, 10, 100, 1,000, and 10,000 elements.
+## Reference Devices and Data
 
-## Devices
-
-Measurements are provided for two physical Android devices:
+The frozen datasets included with the replication package were collected on:
 
 - Motorola Moto G72 - 120 Hz display,
 - Google Pixel 4a - 60 Hz display, Android 13.
 
-The devices are treated as separate replication contexts in the statistical analysis rather than pooling their measurements into one sample.
-
-See `data/README.md` for dataset-level details, canonical-series selection, validation measurements, and provenance information.
-
-## Applications
-
-### React Native benchmark application
-
-Location:
-
-```text
-apps/react-native-benchmark-app/
-```
-
-The same application contains the implementations used for the React Native Legacy Architecture and New Architecture experiments.
-
-Architecture selection is controlled by the Android React Native configuration and the corresponding JavaScript communication-module selection. See the application README for details.
-
-### Native Android benchmark application
-
-Location:
-
-```text
-apps/native-android-benchmark-app/
-```
-
-This project provides the native Android baseline used in the comparative experiments.
-
-## Building the Benchmark Applications
-
-The release-build procedures below were verified from a clean repository worktree on Windows.
-
-### Requirements
-
-For the React Native application:
-
-- Node.js 20 or newer,
-- npm,
-- Android SDK,
-- JDK compatible with the Android Gradle Plugin.
-
-For the native Android application:
-
-- Android SDK,
-- JDK compatible with the Android Gradle Plugin.
-
-Using the JDK bundled with a current Android Studio installation is recommended.
-
-### React Native release build
-
-```powershell
-cd apps/react-native-benchmark-app
-npm ci
-cd android
-.\gradlew.bat app:assembleRelease
-```
-
-The APK is generated under:
-
-```text
-apps/react-native-benchmark-app/android/app/build/outputs/apk/release/
-```
-
-The benchmark measurements reported in the study were collected using release builds rather than the default React Native debug workflow.
-
-### Native Android release build
-
-```powershell
-cd apps/native-android-benchmark-app
-.\gradlew.bat assembleRelease
-```
-
-The APK is generated under:
-
-```text
-apps/native-android-benchmark-app/app/build/outputs/apk/release/
-```
-
-The public repository does not contain a private release signing key, so a locally built native release APK may be unsigned.
-
-## Measurement Data
+The devices are treated as separate replication contexts rather than pooled into one sample.
 
 Canonical datasets are located under:
 
@@ -168,25 +73,99 @@ data/moto-g72/
 data/pixel-4a/
 ```
 
-CSV files use a semicolon (`;`) delimiter.
+See `data/README.md` and `REPLICATION_NOTES.md` before reusing or extending the data.
 
-Some source measurements use a comma as the decimal separator. The provided analysis scripts normalize these values automatically.
+## Requirements
 
-Directories named `raw/` contain earlier or superseded measurement series retained for transparency and provenance. They should not be pooled automatically with the canonical datasets.
+React Native benchmark:
 
-See `data/README.md` for detailed rules governing Scenario 4 validation and clean-build repetitions.
+- Node.js 20 or newer,
+- npm,
+- Android SDK,
+- a JDK compatible with the Android Gradle Plugin.
 
-## Reproducing the Statistical Analysis
+Native Android benchmark:
 
-Python dependencies are listed in:
+- Android SDK,
+- a JDK compatible with the Android Gradle Plugin.
 
-```text
-analysis/requirements.txt
+Using the JDK bundled with a current Android Studio installation is recommended.
+
+## Configure React Native Architecture
+
+The React Native host configuration and Scenario 4 module wrapper must agree.
+
+From the repository root, configure both files atomically:
+
+```powershell
+python .\scripts\configure_rn_architecture.py legacy
 ```
 
-Creating an isolated virtual environment is recommended.
+or:
 
-On Windows:
+```powershell
+python .\scripts\configure_rn_architecture.py new
+```
+
+Verify the current configuration without changing it:
+
+```powershell
+python .\scripts\configure_rn_architecture.py check
+```
+
+Changing architecture requires rebuilding the application.
+
+## Build the React Native Benchmark
+
+```powershell
+cd apps/react-native-benchmark-app
+npm ci
+cd android
+.\gradlew.bat app:assembleRelease
+```
+
+APK output:
+
+```text
+apps/react-native-benchmark-app/android/app/build/outputs/apk/release/
+```
+
+The reported benchmark measurements were collected from release variants, not from the standard React Native debug workflow.
+
+## Build the Native Android Benchmark
+
+```powershell
+cd apps/native-android-benchmark-app
+.\gradlew.bat assembleRelease
+```
+
+APK output:
+
+```text
+apps/native-android-benchmark-app/app/build/outputs/apk/release/
+```
+
+The current public project signs its local release variant with the Android debug signing configuration so that the artifact can be installed for replication without distributing a private production key. It remains a release build type.
+
+## Capture a Replication Environment
+
+With a device connected through ADB, run from the repository root:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\capture_environment.ps1
+```
+
+To save the snapshot:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\capture_environment.ps1 -OutputPath environment_snapshot.txt
+```
+
+The script records the Git revision, host tool versions, and Android device/build properties available through ADB.
+
+## Reproduce the Statistical Analysis
+
+Create an isolated Python environment:
 
 ```powershell
 python -m venv .venv
@@ -194,42 +173,44 @@ python -m venv .venv
 python -m pip install -r .\analysis\requirements.txt
 ```
 
-Run the statistical analysis from the repository root:
+Run:
 
 ```powershell
 python .\analysis\reproduce_analysis.py
-```
-
-Generated tables are written to:
-
-```text
-analysis/results/
-```
-
-Generate the publication figures with:
-
-```powershell
 python .\analysis\make_figures.py
 ```
 
-The resulting PDF and PNG figures are written to:
+Outputs are written to:
 
 ```text
+analysis/results/
 figures/
 ```
 
-## Reproducibility Notes
+The analysis scripts accept source CSVs that use either decimal points or decimal commas.
 
-The repository separates:
+## Reproducibility Boundary
 
-- canonical measurements used in the primary analysis,
-- independent validation measurements,
-- superseded/raw measurements retained for provenance,
-- derived statistical tables,
-- generated figures.
+The canonical CSV datasets and the statistical/figure-generation pipeline are intended to be exactly reproducible from this repository.
 
-This structure is intended to make the exact analysis input explicit and to prevent validation or historical measurements from being accidentally pooled with the primary datasets.
+Some historical measurement-acquisition intermediates were not retained, including complete per-second S3 callback samples and the complete historical ADB orchestration used during the original experiment. These limitations are documented explicitly in `REPLICATION_NOTES.md`.
+
+Usability improvements added after the historical measurements, such as runtime S3/S4 selectors and architecture-configuration utilities, improve future replication but do not retroactively alter the provenance of the frozen datasets.
+
+## Perfetto Traces
+
+Selected Moto G72 Perfetto traces are distributed as release assets rather than regular Git objects because of their size.
+
+The expected filenames and SHA-256 checksums are listed in:
+
+```text
+perfetto/SHA256SUMS.txt
+```
+
+## Citation
+
+Citation metadata are provided in `CITATION.cff`.
 
 ## License
 
-This repository is distributed under the MIT License. See `LICENSE` for details.
+RNArchBench is distributed under the MIT License. See `LICENSE` or `Licence.txt`.
