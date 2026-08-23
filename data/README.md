@@ -16,7 +16,7 @@ Each device directory contains the canonical datasets used for the statistical a
 ### Scenario 1 — Periodic UI updates
 ` s1_latency.csv `
 
-Frame-scheduling latency for periodic UI updates at multiple update intervals.
+Update-to-next-frame-callback delay for periodic UI updates at multiple update intervals. This timing construct is not a native paint marker and should not be interpreted as direct end-to-end frame latency.
 
 ### Scenario 2 — Large-list scrolling
 ` s2_scroll.csv `
@@ -90,6 +90,22 @@ For Pixel 4a, the original and appended Scenario 4 files are retained in:
 
 This allows the complete measurement history to be inspected while keeping the datasets used in the paper unambiguous.
 
+## v1.0.2 derived-field normalization
+
+The primary retained S4 quantities are `Operations_Count` and `Total_Duration_ms`. `Operations_per_second` is a redundant derived field. During the v1.0.2 artifact audit, three canonical throughput cells were found to be inconsistent with the retained count/duration pair and were normalized using:
+
+```text
+round(Operations_Count / (Total_Duration_ms / 1000))
+```
+
+The corrected canonical cells are:
+
+- `pixel-4a/s4_array.csv`, New Architecture, payload 1, run 2: `2603` → `2628`;
+- `pixel-4a/s4_array.csv`, New Architecture, payload 10, run 2: `3864` → `3386`;
+- `moto-g72/s4_scalar.csv`, Legacy, run 8: `6509` → `6510`.
+
+No operation counts or measured durations were changed. Provenance files under `raw/` remain untouched, including the original inconsistent derived values where present. This makes the correction auditable without rewriting the historical source record.
+
 ## Statistical analysis
 
 The scripts used to reproduce descriptive statistics, inferential tests, and publication figures are provided in the repository's `analysis/` directory.
@@ -100,4 +116,4 @@ The analysis treats the two devices as separate replication contexts rather than
 
 All benchmark applications were executed as release builds during the reported experiments.
 
-The repository preserves the original per-run observations; no raw measurement rows from the canonical datasets should be manually edited.
+The repository preserves the original per-run observations. Primary measured quantities should not be manually edited. Any normalization of a redundant derived field must be recomputable from retained primary quantities and documented explicitly, as above.

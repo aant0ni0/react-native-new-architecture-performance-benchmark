@@ -21,3 +21,8 @@ apps/**/android/local.properties
 __pycache__/
 *.pyc
 .DS_Store
+
+# Local replication artifacts
+release-artifacts/
+APK_SHA256SUMS.txt
+environment_snapshot.txt

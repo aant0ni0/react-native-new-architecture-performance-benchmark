@@ -1,4 +1,5 @@
 from pathlib import Path
+import hashlib
 import numpy as np
 import pandas as pd
 from scipy.stats import mannwhitneyu, PermutationMethod
@@ -9,6 +10,13 @@ OUT = Path(__file__).resolve().parent / "results"
 OUT.mkdir(parents=True, exist_ok=True)
 
 PERM = PermutationMethod(n_resamples=100_000, rng=np.random.default_rng(20260822))
+BOOTSTRAP_RESAMPLES = 100_000
+BOOTSTRAP_BASE_SEED = 20260823
+
+
+def write_csv(df: pd.DataFrame, path: Path) -> None:
+    """Write generated analysis CSVs with deterministic LF line endings."""
+    df.to_csv(path, index=False, lineterminator="\n")
 
 
 def read_csv(path: Path) -> pd.DataFrame:
@@ -53,6 +61,27 @@ def cliffs_delta(x, y):
     lt = sum(a < b for a in x for b in y)
     return (gt - lt) / (len(x) * len(y))
 
+
+
+def bootstrap_median_difference_ci(x, y, key, confidence=0.95):
+    """Bootstrap CI for median(x) - median(y), with a stable per-comparison seed."""
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    if len(x) == 0 or len(y) == 0:
+        return np.nan, np.nan, np.nan
+
+    seed_material = f"{BOOTSTRAP_BASE_SEED}|{key}".encode("utf-8")
+    seed = int.from_bytes(hashlib.sha256(seed_material).digest()[:8], "little")
+    rng = np.random.default_rng(seed)
+
+    x_idx = rng.integers(0, len(x), size=(BOOTSTRAP_RESAMPLES, len(x)))
+    y_idx = rng.integers(0, len(y), size=(BOOTSTRAP_RESAMPLES, len(y)))
+    differences = np.median(x[x_idx], axis=1) - np.median(y[y_idx], axis=1)
+
+    alpha = 1.0 - confidence
+    low, high = np.quantile(differences, [alpha / 2, 1 - alpha / 2])
+    observed = np.median(x) - np.median(y)
+    return observed, low, high
 
 def bh_adjust(pvalues):
     p = np.asarray(pvalues, dtype=float)
@@ -100,11 +129,14 @@ for folder, label in [("moto-g72", "Moto G72 (120 Hz)"), ("pixel-4a", "Pixel 4a 
     s1_parts.append(d)
 s1 = pd.concat(s1_parts, ignore_index=True)
 
-describe(
-    s1,
-    ["Device", "Architecture", "Interval_ms"],
-    ["Avg_Latency_ms", "P95_Latency_ms", "P99_Latency_ms", "CPU_Modal_percent", "RAM_Peak_MB"],
-).to_csv(OUT / "s1_descriptive.csv", index=False)
+write_csv(
+    describe(
+        s1,
+        ["Device", "Architecture", "Interval_ms"],
+        ["Avg_Latency_ms", "P95_Latency_ms", "P99_Latency_ms", "CPU_Modal_percent", "RAM_Peak_MB"],
+    ),
+    OUT / "s1_descriptive.csv",
+)
 
 reduction_rows = []
 for device in s1["Device"].unique():
@@ -119,10 +151,13 @@ for device in s1["Device"].unique():
             new.mean(),
             100 * (legacy.mean() - new.mean()) / legacy.mean(),
         ])
-pd.DataFrame(
-    reduction_rows,
-    columns=["Device", "Interval_ms", "Legacy_mean_ms", "New_mean_ms", "New_reduction_pct"],
-).to_csv(OUT / "s1_new_vs_legacy_reduction.csv", index=False)
+write_csv(
+    pd.DataFrame(
+        reduction_rows,
+        columns=["Device", "Interval_ms", "Legacy_mean_ms", "New_mean_ms", "New_reduction_pct"],
+    ),
+    OUT / "s1_new_vs_legacy_reduction.csv",
+)
 
 
 # -----------------------------------------------------------------------------
@@ -136,11 +171,14 @@ for folder, label in [("moto-g72", "Moto G72 (120 Hz)"), ("pixel-4a", "Pixel 4a 
     s2_parts.append(d)
 s2 = pd.concat(s2_parts, ignore_index=True)
 
-describe(
-    s2,
-    ["Device", "Architecture"],
-    ["Effective_FPS", "Janky_Frames_Percent", "Frame_P95_ms", "Frame_P99_ms", "CPU_Modal_percent", "RAM_Peak_MB"],
-).to_csv(OUT / "s2_descriptive.csv", index=False)
+write_csv(
+    describe(
+        s2,
+        ["Device", "Architecture"],
+        ["Effective_FPS", "Janky_Frames_Percent", "Frame_P95_ms", "Frame_P99_ms", "CPU_Modal_percent", "RAM_Peak_MB"],
+    ),
+    OUT / "s2_descriptive.csv",
+)
 
 
 # -----------------------------------------------------------------------------
@@ -156,11 +194,14 @@ for mode, filename in [("JS-driven", "s3_js_driver.csv"), ("Native-driven", "s3_
         parts.append(d)
     merged = pd.concat(parts, ignore_index=True)
     s3sets[mode] = merged
-    describe(
-        merged,
-        ["Device", "Architecture"],
-        ["FPS modal", "Effective_FPS", "Janky_Frames_Percent", "Frame_P95_ms", "Frame_P99_ms", "CPU_Modal_percent", "RAM_Peak_MB"],
-    ).to_csv(OUT / ("s3_js_descriptive.csv" if mode == "JS-driven" else "s3_native_descriptive.csv"), index=False)
+    write_csv(
+        describe(
+            merged,
+            ["Device", "Architecture"],
+            ["FPS modal", "Effective_FPS", "Janky_Frames_Percent", "Frame_P95_ms", "Frame_P99_ms", "CPU_Modal_percent", "RAM_Peak_MB"],
+        ),
+        OUT / ("s3_js_descriptive.csv" if mode == "JS-driven" else "s3_native_descriptive.csv"),
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -190,10 +231,13 @@ for device, series, df in [
             100 * values.std(ddof=1) / values.mean(),
             len(values),
         ])
-pd.DataFrame(
-    scalar_rows,
-    columns=["Device", "Series", "Architecture", "Mean_ops_s", "Median_ops_s", "SD_ops_s", "CV_pct", "n"],
-).to_csv(OUT / "s4_scalar_summary.csv", index=False)
+write_csv(
+    pd.DataFrame(
+        scalar_rows,
+        columns=["Device", "Series", "Architecture", "Mean_ops_s", "Median_ops_s", "SD_ops_s", "CV_pct", "n"],
+    ),
+    OUT / "s4_scalar_summary.csv",
+)
 
 moto_array = read_csv(DATA / "moto-g72" / "s4_array.csv")
 pixel_array = read_csv(DATA / "pixel-4a" / "s4_array.csv")
@@ -212,10 +256,13 @@ for device, df in [("Moto G72", moto_array), ("Pixel 4a", pixel_array)]:
                 100 * values.std(ddof=1) / values.mean(),
                 len(values),
             ])
-pd.DataFrame(
-    array_rows,
-    columns=["Device", "Architecture", "Payload_Size", "Mean_ops_s", "Median_ops_s", "SD_ops_s", "CV_pct", "n"],
-).to_csv(OUT / "s4_array_summary.csv", index=False)
+write_csv(
+    pd.DataFrame(
+        array_rows,
+        columns=["Device", "Architecture", "Payload_Size", "Mean_ops_s", "Median_ops_s", "SD_ops_s", "CV_pct", "n"],
+    ),
+    OUT / "s4_array_summary.csv",
+)
 
 
 # -----------------------------------------------------------------------------
@@ -234,13 +281,19 @@ for folder, label in [("moto-g72", "Moto G72"), ("pixel-4a", "Pixel 4a")]:
     s5_parts.append(d)
 s5 = pd.concat(s5_parts, ignore_index=True)
 
-describe(s5, ["Device", "Technology"], ["TotalTime_ms"]).to_csv(OUT / "s5_descriptive.csv", index=False)
+write_csv(
+    describe(s5, ["Device", "Technology"], ["TotalTime_ms"]),
+    OUT / "s5_descriptive.csv",
+)
 
 
 # -----------------------------------------------------------------------------
 # Primary inferential comparisons: Legacy vs New, within each device.
-# Mann-Whitney U with 100,000 permutation resamples and Cliff's delta.
+# Mann-Whitney U with 100,000 permutation resamples, Cliff's delta, and a
+# deterministic 95% bootstrap CI for the Legacy-minus-New median difference.
 # Benjamini-Hochberg correction is applied within each RQ x device family.
+# For S3, inferential comparisons are restricted to reproducible graphics-layer
+# endpoints; the one-second JS callback-rate summary and CPU/RAM are descriptive.
 # -----------------------------------------------------------------------------
 stats = []
 
@@ -249,14 +302,21 @@ def add_test(rq, device, metric, x, y):
     x = pd.to_numeric(pd.Series(x), errors="coerce").dropna().astype(float).to_numpy()
     y = pd.to_numeric(pd.Series(y), errors="coerce").dropna().astype(float).to_numpy()
     p = mannwhitneyu(x, y, alternative="two-sided", method=PERM).pvalue
-    stats.append([rq, device, metric, p, cliffs_delta(x, y), len(x), len(y)])
+    median_diff, ci_low, ci_high = bootstrap_median_difference_ci(
+        x, y, key=f"{rq}|{device}|{metric}"
+    )
+    stats.append([
+        rq, device, metric, p, cliffs_delta(x, y),
+        np.median(x), np.median(y), median_diff, ci_low, ci_high,
+        len(x), len(y),
+    ])
 
 
 for device in s1["Device"].unique():
     d = s1[s1["Device"] == device]
     for interval in [50, 100, 200, 1000]:
         add_test(
-            "RQ1", device, f"Avg latency {interval} ms",
+            "RQ1", device, f"Avg callback delay {interval} ms",
             d[(d["Architecture"] == "RN_Legacy") & (d["Interval_ms"] == interval)]["Avg_Latency_ms"],
             d[(d["Architecture"] == "RN_NewArch") & (d["Interval_ms"] == interval)]["Avg_Latency_ms"],
         )
@@ -269,7 +329,7 @@ for device in s2["Device"].unique():
 for mode, d in s3sets.items():
     for device in d["Device"].unique():
         q = d[d["Device"] == device]
-        for metric in ["FPS modal", "Effective_FPS", "Janky_Frames_Percent", "Frame_P99_ms", "CPU_Modal_percent"]:
+        for metric in ["Effective_FPS", "Janky_Frames_Percent", "Frame_P99_ms"]:
             add_test(
                 "RQ3", device, f"{mode}: {metric}",
                 q[q["Architecture"] == "RN_Legacy"][metric],
@@ -299,10 +359,18 @@ for device in s5["Device"].unique():
         d[d["Technology"] == "RN_NewArch"]["TotalTime_ms"],
     )
 
-stats = pd.DataFrame(stats, columns=["RQ", "Device", "Metric", "p", "Cliffs_delta", "n_Legacy", "n_New"])
+stats = pd.DataFrame(
+    stats,
+    columns=[
+        "RQ", "Device", "Metric", "p", "Cliffs_delta",
+        "Median_Legacy", "Median_New", "Median_diff_Legacy_minus_New",
+        "Median_diff_CI95_low", "Median_diff_CI95_high",
+        "n_Legacy", "n_New",
+    ],
+)
 stats["q_BH"] = np.nan
 for _, idx in stats.groupby(["RQ", "Device"]).groups.items():
     stats.loc[idx, "q_BH"] = bh_adjust(stats.loc[idx, "p"].to_numpy())
-stats.to_csv(OUT / "legacy_vs_new_statistics.csv", index=False)
+write_csv(stats, OUT / "legacy_vs_new_statistics.csv")
 
 print(f"Analysis complete. Results written to: {OUT}")

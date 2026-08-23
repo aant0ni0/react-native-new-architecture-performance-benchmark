@@ -18,14 +18,18 @@ The script updates both `newArchEnabled` and `IS_LEGACY` and refuses to report s
 powershell -ExecutionPolicy Bypass -File .\scripts\capture_environment.ps1 -OutputPath environment_snapshot.txt
 ```
 
-A connected Android device is required for device-specific ADB properties.
+Without a connected Android device, the script still records the host/toolchain and clearly skips device-specific ADB properties.
 
 ## Hash release APKs
 
-After building both release variants:
+The RN Legacy and New Architecture variants use the same Gradle output filename. If both variants must be retained and hashed together, copy each built APK to a labeled directory before cleaning/building the next variant, then run:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\hash_release_apks.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\hash_release_apks.ps1 -ArtifactDirectory .\release-artifacts
 ```
 
-This writes `APK_SHA256SUMS.txt`.
+This writes `APK_SHA256SUMS.txt` for every APK in the supplied directory.
+
+If `-ArtifactDirectory` is omitted, the script hashes the release APKs currently present in the standard RN and native Gradle output directories. In that mode, only the **currently built** RN architecture is available because the next clean/build reuses the same output path.
+
+See `ACQUISITION_GUIDE.md` for a complete prospective build-and-retention example.

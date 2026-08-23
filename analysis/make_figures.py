@@ -10,13 +10,24 @@ FIG.mkdir(parents=True, exist_ok=True)
 
 
 def save(name):
+    """Save both formats atomically so interrupted/synced writes do not leave 0-byte figures."""
     plt.tight_layout()
-    plt.savefig(FIG / f"{name}.pdf", bbox_inches="tight")
-    plt.savefig(FIG / f"{name}.png", dpi=300, bbox_inches="tight")
-    plt.close()
+    targets = [
+        (FIG / f"{name}.pdf", "pdf", {}),
+        (FIG / f"{name}.png", "png", {"dpi": 300}),
+    ]
+    try:
+        for target, fmt, extra in targets:
+            tmp = target.with_name(target.name + ".tmp")
+            plt.savefig(tmp, format=fmt, bbox_inches="tight", **extra)
+            if not tmp.exists() or tmp.stat().st_size == 0:
+                raise RuntimeError(f"Figure write failed or produced an empty file: {tmp}")
+            tmp.replace(target)
+    finally:
+        plt.close()
 
 
-# Figure 1: cross-device latency reduction
+# Figure 1: cross-device update-to-next-frame-callback delay reduction
 r = pd.read_csv(RESULTS / "s1_new_vs_legacy_reduction.csv")
 plt.figure(figsize=(7.2, 4.4))
 for device, group in r.groupby("Device"):
@@ -24,7 +35,7 @@ for device, group in r.groupby("Device"):
 plt.xscale("log")
 plt.xticks([50, 100, 200, 1000], ["50", "100", "200", "1000"])
 plt.xlabel("Update interval (ms)")
-plt.ylabel("Latency reduction vs Legacy (%)")
+plt.ylabel("Callback-delay reduction vs Legacy (%)")
 plt.legend()
 plt.grid(axis="y", alpha=0.25)
 save("fig1_s1_latency_reduction")

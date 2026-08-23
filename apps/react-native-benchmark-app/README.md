@@ -79,6 +79,12 @@ android/app/build/outputs/apk/release/
 
 The historical measurements distributed with RNArchBench were collected from release builds.
 
+The public `release` build type uses the Android debug signing configuration so that locally generated replication APKs can be installed without distributing a private production signing key. This does not change the Android build type from `release`.
+
+### Windows path length
+
+New Architecture code generation can exceed the Windows Ninja/CMake path limit under a long repository path. If a CMake/Ninja build fails with `Filename longer than 260 characters`, build the same revision from a short ASCII-only path such as `C:\r`.
+
 ## Development
 
 For interactive development:
@@ -99,4 +105,5 @@ data/
 analysis/
 figures/
 REPLICATION_NOTES.md
+ACQUISITION_GUIDE.md
 ```
