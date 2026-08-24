@@ -67,11 +67,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Toggle architecture legacy -> new -> legacy
+      - name: Toggle architecture new -> legacy -> new
         run: |
-          python scripts/configure_rn_architecture.py legacy
           python scripts/configure_rn_architecture.py new
           python scripts/configure_rn_architecture.py legacy
+          python scripts/configure_rn_architecture.py new
 
       - name: Require a clean diff after round-trip toggle
         run: git diff --exit-code -- apps/react-native-benchmark-app/android/gradle.properties apps/react-native-benchmark-app/modules/CommunicationModule.ts
