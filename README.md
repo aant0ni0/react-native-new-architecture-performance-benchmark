@@ -28,15 +28,19 @@ react-native-new-architecture-performance-benchmark/
     results/
     reproduce_analysis.py
     make_figures.py
+    validate_data.py
     requirements.txt
     requirements-lock.txt
   data/
+    devices.csv
     moto-g72/
     pixel-4a/
     README.md
   figures/
   perfetto/
   scripts/
+  .github/
+    workflows/
   ACQUISITION_GUIDE.md
   REPLICATION_NOTES.md
   CITATION.cff
@@ -68,6 +72,12 @@ The frozen datasets included with the replication package were collected on:
 
 The devices are treated as separate replication contexts rather than pooled into one sample.
 
+The reference-device registry used by the analysis and validation scripts lives at:
+
+```text
+data/devices.csv
+```
+
 Canonical datasets are located under:
 
 ```text
@@ -81,15 +91,19 @@ See `data/README.md`, `REPLICATION_NOTES.md`, and `ACQUISITION_GUIDE.md` before 
 
 React Native benchmark:
 
-- Node.js 20 or newer,
-- npm,
-- Android SDK,
-- a JDK compatible with the Android Gradle Plugin.
+- Node.js >=20.19.4 and npm,
+- JDK 17 or later,
+- Android SDK / compileSdk 36,
+- Android Build Tools 36.0.0,
+- Android NDK 27.1.12297006,
+- Gradle 8.14.3 (wrapper-provided).
 
 Native Android benchmark:
 
-- Android SDK,
-- a JDK compatible with the Android Gradle Plugin.
+- JDK 17 or later,
+- Android SDK / compileSdk 36,
+- Android Build Tools 36.0.0,
+- Gradle 8.13 (wrapper-provided).
 
 Using the JDK bundled with a current Android Studio installation is recommended.
 
@@ -97,7 +111,7 @@ Using the JDK bundled with a current Android Studio installation is recommended.
 
 The React Native host configuration and Scenario 4 module wrapper must agree.
 
-From the repository root, configure both files atomically:
+From the repository root, configure both files consistently:
 
 ```powershell
 python .\scripts\configure_rn_architecture.py legacy
@@ -184,6 +198,7 @@ python -m pip install -r .\analysis\requirements-lock.txt
 Run:
 
 ```powershell
+python .\analysis\validate_data.py
 python .\analysis\reproduce_analysis.py
 python .\analysis\make_figures.py
 ```
@@ -197,6 +212,8 @@ figures/
 
 The analysis scripts accept source CSVs that use either decimal points or decimal commas. `analysis/requirements-lock.txt` pins the direct analysis dependencies to a known-good v1.0.2 audit environment; `analysis/requirements.txt` retains the looser minimum-version specification.
 
+`analysis/validate_data.py` checks the canonical CSV schema, run counts, required fields, and Scenario 4 throughput formula before you regenerate tables or figures.
+
 Primary Legacy-vs-New comparisons report permutation-based Mann-Whitney U p-values, Cliff's delta, Benjamini-Hochberg-adjusted q-values, and a deterministic bootstrap 95% confidence interval for the Legacy-minus-New median difference. For S3, the inferential endpoints are restricted to reproducible graphics-layer metrics; the retained one-second callback-rate summary and CPU/RAM fields are descriptive.
 
 ## Reproducibility Boundary
@@ -206,6 +223,14 @@ The canonical CSV datasets and numerical analysis are intended to be exactly rep
 Some historical measurement-acquisition intermediates were not retained, including complete per-second S3 callback samples and the complete historical ADB orchestration used during the original experiment. These limitations are documented explicitly in `REPLICATION_NOTES.md`. A prospective workflow for new acquisitions is provided in `ACQUISITION_GUIDE.md`.
 
 Usability improvements added after the historical measurements, such as runtime S3/S4 selectors and architecture-configuration utilities, improve future replication but do not retroactively alter the provenance of the frozen datasets.
+
+## Engineering Checks
+
+The repository includes:
+
+- `analysis/validate_data.py` for canonical-data validation,
+- Jest and TypeScript checks for the React Native benchmark app,
+- `.github/workflows/reproducibility.yml` for reproducibility, analysis, and architecture-toggle CI.
 
 ## Perfetto Traces
 

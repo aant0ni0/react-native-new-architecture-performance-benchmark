@@ -12,20 +12,21 @@ import {
   increment as nativeIncrement,
   sumArray as nativeSumArray,
 } from '../modules/CommunicationModule';
+import {
+  BenchmarkResult,
+  calculateOpsPerSecond,
+  expectedArraySum,
+  monotonicNow,
+  verifyArrayResult,
+  verifyScalarResult,
+} from './scenario4Benchmark';
 
 const SIMPLE_OP_COUNT = 100_000;
 const ARRAY_OP_COUNT = 10_000;
 const ARRAY_SIZES = [1, 10, 100, 1_000, 10_000] as const;
 const DEFAULT_ARRAY_SIZE = 1_000;
 
-type TestStatus = 'Idle' | 'Running' | 'Finished' | 'Stopped';
-
-type AsyncOperation = () => Promise<number>;
-
-interface BenchmarkResult {
-  durationMs: number;
-  completedOps: number;
-}
+type TestStatus = 'Idle' | 'Running' | 'Finished' | 'Stopped' | 'Failed';
 
 interface Props {
   onBack: () => void;
@@ -36,6 +37,7 @@ interface TestCardProps {
   description: string;
   status: TestStatus;
   result: BenchmarkResult | null;
+  error: string | null;
   running: boolean;
   anyRunning: boolean;
   onStart: () => void;
@@ -46,8 +48,10 @@ interface TestCardProps {
 export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
   const [status1, setStatus1] = useState<TestStatus>('Idle');
   const [result1, setResult1] = useState<BenchmarkResult | null>(null);
+  const [error1, setError1] = useState<string | null>(null);
   const [status2, setStatus2] = useState<TestStatus>('Idle');
   const [result2, setResult2] = useState<BenchmarkResult | null>(null);
+  const [error2, setError2] = useState<string | null>(null);
   const [arraySize, setArraySize] = useState<number>(DEFAULT_ARRAY_SIZE);
 
   const statusRef1 = useRef<TestStatus>('Idle');
@@ -68,6 +72,10 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
     () => Array.from({length: arraySize}, (_, index) => index),
     [arraySize],
   );
+  const sharedArrayExpectedSum = useMemo(
+    () => expectedArraySum(sharedArray),
+    [sharedArray],
+  );
 
   const selectArraySize = useCallback((size: number) => {
     if (statusRef1.current === 'Running' || statusRef2.current === 'Running') {
@@ -76,6 +84,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
 
     setArraySize(size);
     setResult2(null);
+    setError2(null);
     statusRef2.current = 'Idle';
     setStatus2('Idle');
   }, []);
@@ -86,37 +95,56 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       shouldStopRef: React.MutableRefObject<boolean>,
       setStatus: React.Dispatch<React.SetStateAction<TestStatus>>,
       setResult: React.Dispatch<React.SetStateAction<BenchmarkResult | null>>,
+      setError: React.Dispatch<React.SetStateAction<string | null>>,
       statusRef: React.MutableRefObject<TestStatus>,
-      operationFactory: (index: number) => AsyncOperation,
+      operation: (index: number) => Promise<number>,
+      validateResult: (index: number, nativeValue: number) => void,
     ) => {
       shouldStopRef.current = false;
       statusRef.current = 'Running';
       setStatus('Running');
       setResult(null);
+      setError(null);
 
-      const startMs = Date.now();
+      const startMs = monotonicNow();
       let completed = 0;
 
-      for (let index = 0; index < operationCount; index++) {
-        if (shouldStopRef.current) {
-          break;
+      try {
+        for (let index = 0; index < operationCount; index++) {
+          if (shouldStopRef.current) {
+            break;
+          }
+
+          const nativeValue = await operation(index);
+          validateResult(index, nativeValue);
+          completed += 1;
         }
 
-        await operationFactory(index)();
-        completed += 1;
-      }
+        if (!isMounted.current) {
+          return;
+        }
 
-      if (!isMounted.current) {
-        return;
-      }
+        const stoppedEarly = shouldStopRef.current && completed < operationCount;
+        statusRef.current = stoppedEarly ? 'Stopped' : 'Finished';
+        setStatus(stoppedEarly ? 'Stopped' : 'Finished');
+        setResult({
+          durationMs: Math.round(monotonicNow() - startMs),
+          completedOps: completed,
+        });
+      } catch (error) {
+        if (!isMounted.current) {
+          return;
+        }
 
-      const stoppedEarly = shouldStopRef.current && completed < operationCount;
-      statusRef.current = stoppedEarly ? 'Stopped' : 'Finished';
-      setStatus(stoppedEarly ? 'Stopped' : 'Finished');
-      setResult({
-        durationMs: Date.now() - startMs,
-        completedOps: completed,
-      });
+        statusRef.current = 'Failed';
+        setStatus('Failed');
+        setResult(null);
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Scenario 4 benchmark failed unexpectedly.',
+        );
+      }
     },
     [],
   );
@@ -131,8 +159,10 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       shouldStop1,
       setStatus1,
       setResult1,
+      setError1,
       statusRef1,
-      index => () => nativeIncrement(index),
+      index => nativeIncrement(index),
+      (index, nativeValue) => verifyScalarResult(index, nativeValue),
     );
   }, [runBenchmark]);
 
@@ -153,10 +183,13 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       shouldStop2,
       setStatus2,
       setResult2,
+      setError2,
       statusRef2,
-      () => () => nativeSumArray(sharedArray),
+      () => nativeSumArray(sharedArray),
+      (_index, nativeValue) =>
+        verifyArrayResult(sharedArrayExpectedSum, sharedArray.length, nativeValue),
     );
-  }, [runBenchmark, sharedArray]);
+  }, [runBenchmark, sharedArray, sharedArrayExpectedSum]);
 
   const stopTest2 = useCallback(() => {
     if (statusRef2.current !== 'Running') {
@@ -176,6 +209,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
           description={`${SIMPLE_OP_COUNT.toLocaleString()} round-trips, value + 1`}
           status={status1}
           result={result1}
+          error={error1}
           running={status1 === 'Running'}
           anyRunning={isAnyRunning}
           onStart={startTest1}
@@ -187,6 +221,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
           description={`${ARRAY_OP_COUNT.toLocaleString()} round-trips, sum of ${arraySize.toLocaleString()} elements`}
           status={status2}
           result={result2}
+          error={error2}
           running={status2 === 'Running'}
           anyRunning={isAnyRunning}
           onStart={startTest2}
@@ -219,16 +254,14 @@ function TestCard({
   description,
   status,
   result,
+  error,
   running,
   anyRunning,
   onStart,
   onStop,
   children,
 }: TestCardProps): React.JSX.Element {
-  const opsPerSecond =
-    result && result.durationMs > 0
-      ? Math.round(result.completedOps / (result.durationMs / 1000))
-      : null;
+  const opsPerSecond = calculateOpsPerSecond(result);
 
   return (
     <View style={styles.card}>
@@ -254,6 +287,11 @@ function TestCard({
               </Text>
             )}
           </>
+        )}
+        {error !== null && (
+          <Text style={styles.errorText}>
+            Error: <Text style={styles.errorValue}>{error}</Text>
+          </Text>
         )}
       </View>
 
@@ -407,6 +445,14 @@ const styles = StyleSheet.create({
   statValue: {
     fontWeight: '700',
     color: '#1a1a2e',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#ad1457',
+    marginTop: 4,
+  },
+  errorValue: {
+    fontWeight: '700',
   },
   buttonRow: {
     flexDirection: 'row',

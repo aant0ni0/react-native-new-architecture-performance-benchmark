@@ -1,12 +1,16 @@
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+
+from data_utils import load_device_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = Path(__file__).resolve().parent / "results"
 FIG = ROOT / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
+DEVICES = load_device_registry()
 
 
 def save(name):
@@ -30,8 +34,10 @@ def save(name):
 # Figure 1: cross-device update-to-next-frame-callback delay reduction
 r = pd.read_csv(RESULTS / "s1_new_vs_legacy_reduction.csv")
 plt.figure(figsize=(7.2, 4.4))
-for device, group in r.groupby("Device"):
-    plt.plot(group["Interval_ms"], group["New_reduction_pct"], marker="o", label=device)
+for device in DEVICES:
+    label = device.display_label
+    group = r[r["Device"] == label].sort_values("Interval_ms")
+    plt.plot(group["Interval_ms"], group["New_reduction_pct"], marker="o", label=label)
 plt.xscale("log")
 plt.xticks([50, 100, 200, 1000], ["50", "100", "200", "1000"])
 plt.xlabel("Update interval (ms)")
@@ -44,13 +50,13 @@ save("fig1_s1_latency_reduction")
 # Figure 2: scrolling modern jank
 s = pd.read_csv(RESULTS / "s2_descriptive.csv")
 order = []
-for device in ["Moto G72 (120 Hz)", "Pixel 4a (60 Hz)"]:
+for device in DEVICES:
     for arch in ["RN_Legacy", "RN_NewArch", "Native"]:
-        order.append((device, arch))
+        order.append((device.display_label, device.short_label, arch))
 labels, means, sds = [], [], []
-for device, arch in order:
-    row = s[(s["Device"] == device) & (s["Architecture"] == arch)].iloc[0]
-    labels.append(device.split(" (")[0] + "\n" + {"RN_Legacy": "Legacy", "RN_NewArch": "New Arch", "Native": "Native"}[arch])
+for device_label, short_label, arch in order:
+    row = s[(s["Device"] == device_label) & (s["Architecture"] == arch)].iloc[0]
+    labels.append(short_label + "\n" + {"RN_Legacy": "Legacy", "RN_NewArch": "New Arch", "Native": "Native"}[arch])
     means.append(row["Janky_Frames_Percent_mean"])
     sds.append(row["Janky_Frames_Percent_sd"])
 plt.figure(figsize=(8.6, 4.5))
@@ -65,15 +71,14 @@ save("fig2_s2_modern_jank")
 # Figure 3: JS callback/rendered-frame divergence
 s = pd.read_csv(RESULTS / "s3_js_descriptive.csv")
 order = [
-    ("Moto G72 (120 Hz)", "RN_Legacy"),
-    ("Moto G72 (120 Hz)", "RN_NewArch"),
-    ("Pixel 4a (60 Hz)", "RN_Legacy"),
-    ("Pixel 4a (60 Hz)", "RN_NewArch"),
+    (device.display_label, device.short_label, arch)
+    for device in DEVICES
+    for arch in ["RN_Legacy", "RN_NewArch"]
 ]
 labels, js_rate, rendered_rate = [], [], []
-for device, arch in order:
-    row = s[(s["Device"] == device) & (s["Architecture"] == arch)].iloc[0]
-    labels.append(device.split(" (")[0] + "\n" + ("Legacy" if arch == "RN_Legacy" else "New Arch"))
+for device_label, short_label, arch in order:
+    row = s[(s["Device"] == device_label) & (s["Architecture"] == arch)].iloc[0]
+    labels.append(short_label + "\n" + ("Legacy" if arch == "RN_Legacy" else "New Arch"))
     js_rate.append(row["FPS modal_mean"])
     rendered_rate.append(row["Effective_FPS_mean"])
 x = np.arange(len(labels))
@@ -91,13 +96,15 @@ save("fig3_s3_js_render_divergence")
 # Figure 4: JS-Native array throughput vs payload
 s = pd.read_csv(RESULTS / "s4_array_summary.csv")
 plt.figure(figsize=(7.4, 4.8))
-for device, linestyle in [("Moto G72", "-"), ("Pixel 4a", "--")]:
+linestyles = ["-", "--", "-.", ":"]
+for index, device in enumerate(DEVICES):
+    linestyle = linestyles[index % len(linestyles)]
     for arch, marker in [("RN_Legacy", "o"), ("RN_NewArch", "s")]:
-        group = s[(s["Device"] == device) & (s["Architecture"] == arch)]
+        group = s[(s["Device"] == device.short_label) & (s["Architecture"] == arch)]
         plt.plot(
             group["Payload_Size"], group["Median_ops_s"],
             linestyle=linestyle, marker=marker,
-            label=device + " - " + ("Legacy" if arch == "RN_Legacy" else "New Arch"),
+            label=device.short_label + " - " + ("Legacy" if arch == "RN_Legacy" else "New Arch"),
         )
 plt.xscale("log")
 plt.yscale("log")
@@ -111,9 +118,9 @@ save("fig4_s4_payload_throughput")
 # Figure 5: cold-start medians
 s = pd.read_csv(RESULTS / "s5_descriptive.csv")
 order = []
-for device in ["Moto G72", "Pixel 4a"]:
+for device in DEVICES:
     for arch in ["RN_Legacy", "RN_NewArch", "Native"]:
-        order.append((device, arch))
+        order.append((device.short_label, arch))
 labels, medians = [], []
 for device, arch in order:
     row = s[(s["Device"] == device) & (s["Technology"] == arch)].iloc[0]

@@ -27,7 +27,7 @@ The communication screen evaluates:
 - scalar asynchronous calls,
 - array/sum calls with payload sizes 1, 10, 100, 1,000, and 10,000.
 
-The payload is selected at runtime and prepared outside the timed round-trip loop.
+The payload is selected at runtime and prepared outside the timed round-trip loop. Each native result is validated before the benchmark is accepted so that throughput is not reported for an incorrect module implementation.
 
 ## Architecture Switching
 
@@ -58,10 +58,12 @@ The helper keeps these values aligned:
 
 ## Requirements
 
-- Node.js 20 or newer,
-- npm,
-- Android SDK,
-- JDK compatible with the Android Gradle Plugin.
+- Node.js >=20.19.4 and npm,
+- JDK 17 or later,
+- Android SDK / compileSdk 36,
+- Android Build Tools 36.0.0,
+- Android NDK 27.1.12297006,
+- Gradle 8.14.3 (wrapper-provided).
 
 ## Release Build
 

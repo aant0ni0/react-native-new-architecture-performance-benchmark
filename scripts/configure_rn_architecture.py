@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Atomically configure the React Native Legacy or New Architecture benchmark build."""
+"""Configure the React Native Legacy or New Architecture benchmark build consistently."""
 
 from __future__ import annotations
 
@@ -74,11 +74,21 @@ def configure(target: str) -> None:
             f"Expected exactly one marker in each file; got gradle={count_g}, module={count_m}."
         )
 
-    write_preserving_newlines(GRADLE, gradle_new)
-    write_preserving_newlines(MODULE, module_new)
+    try:
+        write_preserving_newlines(GRADLE, gradle_new)
+        write_preserving_newlines(MODULE, module_new)
 
-    if describe() != target:
-        raise RuntimeError("Post-write consistency check failed.")
+        if describe() != target:
+            raise RuntimeError("Post-write consistency check failed.")
+    except Exception as exc:
+        try:
+            write_preserving_newlines(GRADLE, gradle)
+            write_preserving_newlines(MODULE, module)
+        except Exception as rollback_exc:
+            raise RuntimeError(
+                f"Configuration failed and rollback also failed: {rollback_exc}"
+            ) from exc
+        raise
 
 
 def main() -> int:

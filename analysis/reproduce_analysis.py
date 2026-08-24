@@ -1,13 +1,15 @@
-from pathlib import Path
 import hashlib
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from scipy.stats import mannwhitneyu, PermutationMethod
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / "data"
+from data_utils import load_device_file, load_device_registry, normalize_architecture, read_csv_measurements
+
 OUT = Path(__file__).resolve().parent / "results"
 OUT.mkdir(parents=True, exist_ok=True)
+DEVICES = load_device_registry()
 
 PERM = PermutationMethod(n_resamples=100_000, rng=np.random.default_rng(20260822))
 BOOTSTRAP_RESAMPLES = 100_000
@@ -17,42 +19,6 @@ BOOTSTRAP_BASE_SEED = 20260823
 def write_csv(df: pd.DataFrame, path: Path) -> None:
     """Write generated analysis CSVs with deterministic LF line endings."""
     df.to_csv(path, index=False, lineterminator="\n")
-
-
-def read_csv(path: Path) -> pd.DataFrame:
-    df = pd.read_csv(path, sep=";", encoding="utf-8-sig").dropna(how="all")
-
-    # Some measurement CSVs use a decimal comma (e.g. 56,03).
-    # pandas 3.x may load such columns as StringDtype rather than object,
-    # therefore check all string-like columns instead of only dtype == object.
-    for col in df.columns:
-        series = df[col]
-        if pd.api.types.is_string_dtype(series.dtype) or series.dtype == object:
-            cleaned = series.astype("string").str.strip().str.replace(",", ".", regex=False)
-            numeric = pd.to_numeric(cleaned, errors="coerce")
-            nonempty = cleaned.notna().sum()
-
-            # Convert a column only when it is predominantly numeric.
-            # Text identifiers such as RN_Legacy remain strings.
-            if nonempty and numeric.notna().sum() >= max(1, int(np.ceil(0.8 * nonempty))):
-                df[col] = numeric
-
-    return df
-
-
-def normalize_architecture(df: pd.DataFrame, col="Architecture") -> pd.DataFrame:
-    if col in df.columns:
-        df[col] = df[col].replace({
-            "Legacy": "RN_Legacy",
-            "RN Legacy": "RN_Legacy",
-            "NewArch": "RN_NewArch",
-            "New Architecture": "RN_NewArch",
-            "RN New Architecture": "RN_NewArch",
-            "Android": "Native",
-            "Android Native": "Native",
-        })
-    return df
-
 
 def cliffs_delta(x, y):
     x = np.asarray(x, dtype=float)
@@ -113,19 +79,16 @@ def describe(df, groups, metrics):
 
 
 def load_device(filename, device, architecture_col="Architecture"):
-    df = read_csv(DATA / device / filename)
-    if architecture_col in df.columns:
-        df = normalize_architecture(df, architecture_col)
-    return df
+    return load_device_file(device, filename, architecture_col)
 
 
 # -----------------------------------------------------------------------------
 # RQ1 / Scenario 1
 # -----------------------------------------------------------------------------
 s1_parts = []
-for folder, label in [("moto-g72", "Moto G72 (120 Hz)"), ("pixel-4a", "Pixel 4a (60 Hz)")]:
-    d = load_device("s1_latency.csv", folder)
-    d["Device"] = label
+for device in DEVICES:
+    d = load_device("s1_latency.csv", device)
+    d["Device"] = device.display_label
     s1_parts.append(d)
 s1 = pd.concat(s1_parts, ignore_index=True)
 
@@ -164,9 +127,9 @@ write_csv(
 # RQ2 / Scenario 2
 # -----------------------------------------------------------------------------
 s2_parts = []
-for folder, label in [("moto-g72", "Moto G72 (120 Hz)"), ("pixel-4a", "Pixel 4a (60 Hz)")]:
-    d = load_device("s2_scroll.csv", folder)
-    d["Device"] = label
+for device in DEVICES:
+    d = load_device("s2_scroll.csv", device)
+    d["Device"] = device.display_label
     d["Effective_FPS"] = d["Total_Frames_Rendered"].astype(float) / (d["Measured_Duration_ms"].astype(float) / 1000)
     s2_parts.append(d)
 s2 = pd.concat(s2_parts, ignore_index=True)
@@ -187,9 +150,9 @@ write_csv(
 s3sets = {}
 for mode, filename in [("JS-driven", "s3_js_driver.csv"), ("Native-driven", "s3_native_driver.csv")]:
     parts = []
-    for folder, label in [("moto-g72", "Moto G72 (120 Hz)"), ("pixel-4a", "Pixel 4a (60 Hz)")]:
-        d = load_device(filename, folder)
-        d["Device"] = label
+    for device in DEVICES:
+        d = load_device(filename, device)
+        d["Device"] = device.display_label
         d["Effective_FPS"] = d["Total_Frames_Rendered"].astype(float) / (d["Measured_Duration_ms"].astype(float) / 1000)
         parts.append(d)
     merged = pd.concat(parts, ignore_index=True)
@@ -207,23 +170,20 @@ for mode, filename in [("JS-driven", "s3_js_driver.csv"), ("Native-driven", "s3_
 # -----------------------------------------------------------------------------
 # RQ4 / Scenario 4
 # Canonical datasets are already disambiguated in data/<device>/.
-# Pixel scalar validation is reported separately and is NOT pooled.
+# Independent New Architecture validation series, when present, are reported
+# separately and are NOT pooled with the primary scalar experiment.
 # -----------------------------------------------------------------------------
-moto_scalar = read_csv(DATA / "moto-g72" / "s4_scalar.csv")
-pixel_scalar = read_csv(DATA / "pixel-4a" / "s4_scalar.csv")
-pixel_scalar_validation = read_csv(DATA / "pixel-4a" / "s4_scalar_validation.csv")
+scalar_primary_by_device: dict[str, pd.DataFrame] = {}
 
 scalar_rows = []
-for device, series, df in [
-    ("Moto G72", "primary", moto_scalar),
-    ("Pixel 4a", "primary", pixel_scalar),
-    ("Pixel 4a", "independent NewArch validation", pixel_scalar_validation),
-]:
-    for tech in df["Technology"].dropna().unique():
-        values = df[df["Technology"] == tech]["Operations_per_second"].astype(float)
+for device in DEVICES:
+    primary = read_csv_measurements(device.data_dir / "s4_scalar.csv")
+    scalar_primary_by_device[device.short_label] = primary
+    for tech in primary["Technology"].dropna().unique():
+        values = primary[primary["Technology"] == tech]["Operations_per_second"].astype(float)
         scalar_rows.append([
-            device,
-            series,
+            device.short_label,
+            "primary",
             tech,
             values.mean(),
             values.median(),
@@ -231,6 +191,22 @@ for device, series, df in [
             100 * values.std(ddof=1) / values.mean(),
             len(values),
         ])
+
+    validation = device.data_dir / "s4_scalar_validation.csv"
+    if validation.exists():
+        validation_df = read_csv_measurements(validation)
+        for tech in validation_df["Technology"].dropna().unique():
+            values = validation_df[validation_df["Technology"] == tech]["Operations_per_second"].astype(float)
+            scalar_rows.append([
+                device.short_label,
+                "independent NewArch validation",
+                tech,
+                values.mean(),
+                values.median(),
+                values.std(ddof=1),
+                100 * values.std(ddof=1) / values.mean(),
+                len(values),
+            ])
 write_csv(
     pd.DataFrame(
         scalar_rows,
@@ -239,15 +215,16 @@ write_csv(
     OUT / "s4_scalar_summary.csv",
 )
 
-moto_array = read_csv(DATA / "moto-g72" / "s4_array.csv")
-pixel_array = read_csv(DATA / "pixel-4a" / "s4_array.csv")
+array_by_device: dict[str, pd.DataFrame] = {}
 array_rows = []
-for device, df in [("Moto G72", moto_array), ("Pixel 4a", pixel_array)]:
+for device in DEVICES:
+    df = read_csv_measurements(device.data_dir / "s4_array.csv")
+    array_by_device[device.short_label] = df
     for tech in ["RN_Legacy", "RN_NewArch"]:
         for payload in [1, 10, 100, 1000, 10000]:
             values = df[(df["Technology"] == tech) & (df["Payload_Size"] == payload)]["Operations_per_second"].astype(float)
             array_rows.append([
-                device,
+                device.short_label,
                 tech,
                 payload,
                 values.mean(),
@@ -269,15 +246,10 @@ write_csv(
 # RQ5 / Scenario 5
 # -----------------------------------------------------------------------------
 s5_parts = []
-for folder, label in [("moto-g72", "Moto G72"), ("pixel-4a", "Pixel 4a")]:
-    d = read_csv(DATA / folder / "s5_startup.csv")
-    d["Technology"] = d["Technology"].replace({
-        "Legacy": "RN_Legacy",
-        "NewArch": "RN_NewArch",
-        "New Architecture": "RN_NewArch",
-        "Android": "Native",
-    })
-    d["Device"] = label
+for device in DEVICES:
+    d = read_csv_measurements(device.data_dir / "s5_startup.csv")
+    d = normalize_architecture(d, "Technology")
+    d["Device"] = device.short_label
     s5_parts.append(d)
 s5 = pd.concat(s5_parts, ignore_index=True)
 
@@ -336,14 +308,14 @@ for mode, d in s3sets.items():
                 q[q["Architecture"] == "RN_NewArch"][metric],
             )
 
-for device, d in [("Moto G72", moto_scalar), ("Pixel 4a", pixel_scalar)]:
+for device, d in scalar_primary_by_device.items():
     add_test(
         "RQ4", device, "Scalar",
         d[d["Technology"] == "RN_Legacy"]["Operations_per_second"],
         d[d["Technology"] == "RN_NewArch"]["Operations_per_second"],
     )
 
-for device, d in [("Moto G72", moto_array), ("Pixel 4a", pixel_array)]:
+for device, d in array_by_device.items():
     for payload in [1, 10, 100, 1000, 10000]:
         add_test(
             "RQ4", device, f"Array payload {payload}",

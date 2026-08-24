@@ -21,6 +21,12 @@ Record at minimum:
 - Node, Java, Gradle, Android SDK/ADB, and Python versions;
 - whether the RN build is Legacy or New Architecture.
 
+When you are ready to add a new canonical device directory, also add one row to:
+
+```text
+data/devices.csv
+```
+
 ### Windows path-length note
 
 React Native New Architecture code generation can exceed the Windows Ninja/CMake path limit when the repository is stored under a long path. If this occurs, build from a short ASCII-only path such as:
@@ -192,5 +198,11 @@ Do not overwrite the frozen reference directories when adding a new device. Crea
 - APK SHA-256 manifest;
 - raw `gfxinfo`/ActivityManager/tooling output when collected;
 - notes on any deviations from this guide.
+
+After adding the new canonical CSV files, run the validator from the repository root:
+
+```powershell
+python .\analysis\validate_data.py --device <device-folder>
+```
 
 If a redundant derived field is corrected from retained primary quantities, preserve the original raw record and document the normalization explicitly.
