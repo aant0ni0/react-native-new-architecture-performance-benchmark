@@ -21,6 +21,9 @@ identifiers:
   - type: doi
     value: "10.5281/zenodo.22071872"
     description: "Concept DOI for all archived versions of RNArchBench."
+  - type: doi
+    value: "10.5281/zenodo.22086549"
+    description: "Version DOI for the archived RNArchBench v1.0.3 release."
 repository-code: "https://github.com/aant0ni0/react-native-new-architecture-performance-benchmark"
 license: MIT
 keywords:
