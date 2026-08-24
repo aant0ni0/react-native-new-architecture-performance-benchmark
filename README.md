@@ -244,16 +244,16 @@ perfetto/SHA256SUMS.txt
 
 ## Archived Release and DOI
 
-The exact RNArchBench v1.0.3 artifact prepared for archival and the SoftwareX submission is preserved on Zenodo:
+The exact RNArchBench v1.0.4 artifact prepared for archival and the SoftwareX submission is preserved on Zenodo:
 
-- Version DOI (v1.0.3): [10.5281/zenodo.22086549](https://doi.org/10.5281/zenodo.22086549)
+- Version DOI (v1.0.4): [10.5281/zenodo.22087347](https://doi.org/10.5281/zenodo.22087347)
 - Concept DOI (all versions): [10.5281/zenodo.22071872](https://doi.org/10.5281/zenodo.22071872)
 
 For reproducibility, cite the version DOI when referring to the exact artifact used in a study. The concept DOI may be used when referring to RNArchBench as an evolving software project.
 
 ## Citation
 
-Citation metadata are provided in `CITATION.cff`. For RNArchBench v1.0.3, the archived version DOI is [10.5281/zenodo.22086549](https://doi.org/10.5281/zenodo.22086549).
+Citation metadata are provided in `CITATION.cff`. For RNArchBench v1.0.4, the archived version DOI is [10.5281/zenodo.22087347](https://doi.org/10.5281/zenodo.22087347).
 
 
 ## License
