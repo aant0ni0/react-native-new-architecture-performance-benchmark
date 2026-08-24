@@ -22,7 +22,7 @@ Primary Legacy-vs-New comparisons use a two-sided Mann-Whitney U statistic with 
 
 For Scenario 3, inferential comparisons are restricted to reproducible graphics-layer endpoints: `Effective_FPS`, `Janky_Frames_Percent`, and `Frame_P99_ms`. The retained `FPS modal` callback-rate summary and CPU/RAM fields remain descriptive.
 
-`requirements-lock.txt` pins the direct dependency versions validated during the v1.0.2 artifact audit. `requirements.txt` remains a looser minimum-version specification for users who prefer a current compatible environment.
+`requirements-lock.txt` pins the complete tested dependency set. `requirements.txt` remains a looser minimum-version specification for users who prefer a current compatible environment.
 
 ### Validation
 
@@ -30,7 +30,7 @@ For Scenario 3, inferential comparisons are restricted to reproducible graphics-
 
 - required canonical files per device,
 - required columns and missing values,
-- exact run counts per condition,
+- the exact expected condition grid and run counts,
 - duplicate condition/run keys,
 - Scenario 4 `Operations_per_second` consistency with retained count and duration.
 

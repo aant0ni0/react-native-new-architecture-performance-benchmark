@@ -3,6 +3,8 @@ import {
   calculateOpsPerSecond,
   expectedArraySum,
   monotonicNow,
+  runTimedOperations,
+  runUntimedDiagnostic,
   verifyArrayResult,
   verifyScalarResult,
 } from '../screens/scenario4Benchmark';
@@ -27,6 +29,41 @@ describe('scenario4Benchmark helpers', () => {
     expect(() => verifyArrayResult(expected, payload.length, 9)).toThrow(
       BenchmarkValidationError,
     );
+  });
+
+  test('keeps correctness validation outside the timed operation loop', async () => {
+    const now = jest.fn().mockReturnValueOnce(100).mockReturnValueOnce(175.9);
+    const operation = jest.fn(async (index: number) => index + 1);
+
+    const result = await runTimedOperations({
+      operationCount: 3,
+      operation,
+      shouldStop: () => false,
+      now,
+    });
+
+    expect(result).toEqual({
+      benchmark: {durationMs: 76, completedOps: 3},
+      lastValue: 3,
+      stoppedEarly: false,
+    });
+    expect(operation).toHaveBeenCalledTimes(3);
+    expect(now).toHaveBeenCalledTimes(2);
+  });
+
+  test('runs full correctness diagnostics outside the measurement path', async () => {
+    const validated: number[] = [];
+
+    await runUntimedDiagnostic({
+      operationCount: 3,
+      operation: async index => index + 1,
+      validateResult: (index, value) => {
+        verifyScalarResult(index, value);
+        validated.push(value);
+      },
+    });
+
+    expect(validated).toEqual([1, 2, 3]);
   });
 
   test('prefers a monotonic timer when performance.now is available', () => {

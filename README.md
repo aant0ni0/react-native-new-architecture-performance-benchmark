@@ -61,7 +61,7 @@ react-native-new-architecture-performance-benchmark/
 
 S3 exposes a runtime selector for JS-driven versus native-driven animation execution.
 
-S4 exposes runtime payload sizes of 1, 10, 100, 1,000, and 10,000 elements. A native Android S4 is intentionally not provided because the workload specifically evaluates the JavaScript-native boundary.
+S4 exposes runtime payload sizes of 1, 10, 100, 1,000, and 10,000 elements. Each timed run performs an untimed correctness preflight before the timer starts and validates the final response after the timer stops; the UI also provides a separate full diagnostic that validates every response without measuring throughput. A native Android S4 is intentionally not provided because the workload specifically evaluates the JavaScript-native boundary.
 
 ## Reference Devices and Data
 
@@ -210,9 +210,9 @@ analysis/results/
 figures/
 ```
 
-The analysis scripts accept source CSVs that use either decimal points or decimal commas. `analysis/requirements-lock.txt` pins the direct analysis dependencies to a known-good v1.0.2 audit environment; `analysis/requirements.txt` retains the looser minimum-version specification.
+The analysis scripts accept source CSVs that use either decimal points or decimal commas. `analysis/requirements-lock.txt` pins the complete tested analysis dependency set; `analysis/requirements.txt` retains the looser minimum-version specification.
 
-`analysis/validate_data.py` checks the canonical CSV schema, run counts, required fields, and Scenario 4 throughput formula before you regenerate tables or figures.
+`analysis/validate_data.py` checks the canonical CSV schema, exact experimental condition grid and run counts, required fields, and Scenario 4 throughput formula before you regenerate tables or figures.
 
 Primary Legacy-vs-New comparisons report permutation-based Mann-Whitney U p-values, Cliff's delta, Benjamini-Hochberg-adjusted q-values, and a deterministic bootstrap 95% confidence interval for the Legacy-minus-New median difference. For S3, the inferential endpoints are restricted to reproducible graphics-layer metrics; the retained one-second callback-rate summary and CPU/RAM fields are descriptive.
 

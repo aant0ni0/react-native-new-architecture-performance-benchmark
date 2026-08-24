@@ -30,6 +30,17 @@ jobs:
       - name: Recreate publication figures
         run: python analysis/make_figures.py
 
+      - name: Ensure publication PNG figures stay committed
+        run: git diff --exit-code -- figures/*.png
+
+      - name: Check regenerated figure set
+        run: |
+          test "$(find figures -maxdepth 1 -name '*.png' | wc -l)" -eq 5
+          test "$(find figures -maxdepth 1 -name '*.pdf' | wc -l)" -eq 5
+
+      - name: Run canonical-data validator regression tests
+        run: python -m unittest discover -s analysis/tests -v
+
   react-native-js:
     runs-on: ubuntu-latest
     defaults:
@@ -56,6 +67,41 @@ jobs:
 
       - name: Run Jest tests
         run: npm test -- --runInBand
+
+  android-apk-builds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+          cache-dependency-path: apps/react-native-benchmark-app/package-lock.json
+
+      - name: Install benchmark Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+
+      - name: Build and unit-test native Android benchmark
+        working-directory: apps/native-android-benchmark-app
+        run: ./gradlew --no-daemon :app:testDebugUnitTest :app:assembleRelease
+
+      - name: Install React Native dependencies
+        working-directory: apps/react-native-benchmark-app
+        run: npm ci
+
+      - name: Build React Native benchmark APK
+        working-directory: apps/react-native-benchmark-app/android
+        run: ./gradlew --no-daemon app:assembleDebug
 
   architecture-switch:
     runs-on: ubuntu-latest
