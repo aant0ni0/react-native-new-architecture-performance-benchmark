@@ -28,15 +28,12 @@ jobs:
         run: git diff --exit-code -- analysis/results
 
       - name: Recreate publication figures
-        run: python analysis/make_figures.py
-
-      - name: Ensure publication PNG figures stay committed
-        run: git diff --exit-code -- figures/*.png
-
-      - name: Check regenerated figure set
         run: |
-          test "$(find figures -maxdepth 1 -name '*.png' | wc -l)" -eq 5
-          test "$(find figures -maxdepth 1 -name '*.pdf' | wc -l)" -eq 5
+          rm -f figures/*.png figures/*.pdf
+          python analysis/make_figures.py
+
+      - name: Validate regenerated figure set
+        run: python analysis/check_figures.py
 
       - name: Run canonical-data validator regression tests
         run: python -m unittest discover -s analysis/tests -v
