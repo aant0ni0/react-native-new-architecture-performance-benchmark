@@ -16,8 +16,10 @@ Scenario 4 is intentionally absent from the native application because S4 specif
 
 ## Requirements
 
-- Android SDK,
-- JDK compatible with the Android Gradle Plugin.
+- JDK 17 or later,
+- Android SDK / compileSdk 36,
+- Android Build Tools 36.0.0,
+- Gradle 8.13 (wrapper-provided).
 
 ## Release Build
 

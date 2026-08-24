@@ -9,6 +9,10 @@ Measurements were collected on two physical Android devices:
 - `moto-g72/` — Motorola Moto G72, 120 Hz display
 - `pixel-4a/` — Google Pixel 4a, 60 Hz display
 
+The analysis and validation scripts read the reference-device registry from:
+
+`devices.csv`
+
 Each device directory contains the canonical datasets used for the statistical analysis reported in the paper.
 
 ## Benchmark scenarios
@@ -111,6 +115,12 @@ No operation counts or measured durations were changed. Provenance files under `
 The scripts used to reproduce descriptive statistics, inferential tests, and publication figures are provided in the repository's `analysis/` directory.
 
 The analysis treats the two devices as separate replication contexts rather than pooling their observations into a single sample.
+
+Before regenerating derived results, run:
+
+```text
+python analysis/validate_data.py
+```
 
 ## Notes
 
