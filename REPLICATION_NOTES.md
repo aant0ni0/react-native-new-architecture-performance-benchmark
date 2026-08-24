@@ -4,7 +4,7 @@ This document separates what can be reproduced exactly from what is preserved on
 
 ## Exact analysis reproducibility
 
-The repository contains the canonical per-run CSV datasets used by the analysis pipeline together with the scripts that generate derived statistics and figures. With the pinned direct dependencies in `analysis/requirements-lock.txt`, the numerical CSV outputs are intended to be exactly reproducible. Figure content is reproducible, although binary PDF/PNG bytes may vary with rendering/file-metadata differences across platforms.
+The repository contains the canonical per-run CSV datasets used by the analysis pipeline together with the scripts that generate derived statistics and figures. With the fully pinned tested dependency set in `analysis/requirements-lock.txt`, the numerical CSV outputs are intended to be exactly reproducible. Figure content is reproducible, although binary PDF/PNG bytes may vary with rendering/file-metadata differences across platforms.
 
 From the repository root:
 
@@ -53,7 +53,7 @@ The historical S3 datasets were collected as separate fixed driver configuration
 
 The current React Native communication benchmark allows payload sizes 1, 10, 100, 1,000, and 10,000 to be selected at runtime.
 
-This improves future replication ergonomics. The canonical datasets retain the actual measurement series used by the study.
+Each timed run first performs one untimed correctness preflight. The measured loop then contains only sequential JavaScript--Native calls and awaits; timing stops immediately after the loop, and the final response is checked outside the timing boundary. A separate UI diagnostic validates every response without measuring throughput. These prospective safeguards do not alter the canonical datasets, which retain the actual measurement series used by the study.
 
 ### Native Scenario 4
 

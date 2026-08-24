@@ -16,7 +16,8 @@ import {
   BenchmarkResult,
   calculateOpsPerSecond,
   expectedArraySum,
-  monotonicNow,
+  runTimedOperations,
+  runUntimedDiagnostic,
   verifyArrayResult,
   verifyScalarResult,
 } from './scenario4Benchmark';
@@ -26,7 +27,14 @@ const ARRAY_OP_COUNT = 10_000;
 const ARRAY_SIZES = [1, 10, 100, 1_000, 10_000] as const;
 const DEFAULT_ARRAY_SIZE = 1_000;
 
-type TestStatus = 'Idle' | 'Running' | 'Finished' | 'Stopped' | 'Failed';
+type TestStatus =
+  | 'Idle'
+  | 'Running'
+  | 'Validating'
+  | 'Validated'
+  | 'Finished'
+  | 'Stopped'
+  | 'Failed';
 
 interface Props {
   onBack: () => void;
@@ -41,8 +49,13 @@ interface TestCardProps {
   running: boolean;
   anyRunning: boolean;
   onStart: () => void;
+  onValidate: () => void;
   onStop: () => void;
   children?: React.ReactNode;
+}
+
+function isActiveStatus(status: TestStatus): boolean {
+  return status === 'Running' || status === 'Validating';
 }
 
 export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
@@ -67,7 +80,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
     };
   }, []);
 
-  const isAnyRunning = status1 === 'Running' || status2 === 'Running';
+  const isAnyRunning = isActiveStatus(status1) || isActiveStatus(status2);
   const sharedArray = useMemo(
     () => Array.from({length: arraySize}, (_, index) => index),
     [arraySize],
@@ -78,7 +91,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
   );
 
   const selectArraySize = useCallback((size: number) => {
-    if (statusRef1.current === 'Running' || statusRef2.current === 'Running') {
+    if (isActiveStatus(statusRef1.current) || isActiveStatus(statusRef2.current)) {
       return;
     }
 
@@ -98,7 +111,8 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       setError: React.Dispatch<React.SetStateAction<string | null>>,
       statusRef: React.MutableRefObject<TestStatus>,
       operation: (index: number) => Promise<number>,
-      validateResult: (index: number, nativeValue: number) => void,
+      runPreflight: () => Promise<void>,
+      validateFinalResult: (completedOps: number, lastValue: number | null) => void,
     ) => {
       shouldStopRef.current = false;
       statusRef.current = 'Running';
@@ -106,31 +120,26 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       setResult(null);
       setError(null);
 
-      const startMs = monotonicNow();
-      let completed = 0;
-
       try {
-        for (let index = 0; index < operationCount; index++) {
-          if (shouldStopRef.current) {
-            break;
-          }
-
-          const nativeValue = await operation(index);
-          validateResult(index, nativeValue);
-          completed += 1;
-        }
+        // Correctness checks run outside the timed loop so they do not alter throughput.
+        await runPreflight();
+        const timedResult = await runTimedOperations({
+          operationCount,
+          operation,
+          shouldStop: () => shouldStopRef.current,
+        });
+        validateFinalResult(
+          timedResult.benchmark.completedOps,
+          timedResult.lastValue,
+        );
 
         if (!isMounted.current) {
           return;
         }
 
-        const stoppedEarly = shouldStopRef.current && completed < operationCount;
-        statusRef.current = stoppedEarly ? 'Stopped' : 'Finished';
-        setStatus(stoppedEarly ? 'Stopped' : 'Finished');
-        setResult({
-          durationMs: Math.round(monotonicNow() - startMs),
-          completedOps: completed,
-        });
+        statusRef.current = timedResult.stoppedEarly ? 'Stopped' : 'Finished';
+        setStatus(timedResult.stoppedEarly ? 'Stopped' : 'Finished');
+        setResult(timedResult.benchmark);
       } catch (error) {
         if (!isMounted.current) {
           return;
@@ -150,7 +159,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
   );
 
   const startTest1 = useCallback(async () => {
-    if (statusRef1.current === 'Running' || statusRef2.current === 'Running') {
+    if (isActiveStatus(statusRef1.current) || isActiveStatus(statusRef2.current)) {
       return;
     }
 
@@ -162,7 +171,12 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       setError1,
       statusRef1,
       index => nativeIncrement(index),
-      (index, nativeValue) => verifyScalarResult(index, nativeValue),
+      async () => verifyScalarResult(0, await nativeIncrement(0)),
+      (completedOps, lastValue) => {
+        if (completedOps > 0 && lastValue !== null) {
+          verifyScalarResult(completedOps - 1, lastValue);
+        }
+      },
     );
   }, [runBenchmark]);
 
@@ -173,8 +187,43 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
     shouldStop1.current = true;
   }, []);
 
+  const validateTest1 = useCallback(async () => {
+    if (isAnyRunning) {
+      return;
+    }
+
+    statusRef1.current = 'Validating';
+    setStatus1('Validating');
+    setResult1(null);
+    setError1(null);
+
+    try {
+      await runUntimedDiagnostic({
+        operationCount: SIMPLE_OP_COUNT,
+        operation: index => nativeIncrement(index),
+        validateResult: (index, nativeValue) => verifyScalarResult(index, nativeValue),
+      });
+      if (!isMounted.current) {
+        return;
+      }
+      statusRef1.current = 'Validated';
+      setStatus1('Validated');
+    } catch (error) {
+      if (!isMounted.current) {
+        return;
+      }
+      statusRef1.current = 'Failed';
+      setStatus1('Failed');
+      setError1(
+        error instanceof Error
+          ? error.message
+          : 'Scenario 4 diagnostic failed unexpectedly.',
+      );
+    }
+  }, [isAnyRunning]);
+
   const startTest2 = useCallback(async () => {
-    if (statusRef1.current === 'Running' || statusRef2.current === 'Running') {
+    if (isActiveStatus(statusRef1.current) || isActiveStatus(statusRef2.current)) {
       return;
     }
 
@@ -186,8 +235,21 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
       setError2,
       statusRef2,
       () => nativeSumArray(sharedArray),
-      (_index, nativeValue) =>
-        verifyArrayResult(sharedArrayExpectedSum, sharedArray.length, nativeValue),
+      async () =>
+        verifyArrayResult(
+          sharedArrayExpectedSum,
+          sharedArray.length,
+          await nativeSumArray(sharedArray),
+        ),
+      (completedOps, lastValue) => {
+        if (completedOps > 0 && lastValue !== null) {
+          verifyArrayResult(
+            sharedArrayExpectedSum,
+            sharedArray.length,
+            lastValue,
+          );
+        }
+      },
     );
   }, [runBenchmark, sharedArray, sharedArrayExpectedSum]);
 
@@ -197,6 +259,46 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
     }
     shouldStop2.current = true;
   }, []);
+
+  const validateTest2 = useCallback(async () => {
+    if (isAnyRunning) {
+      return;
+    }
+
+    statusRef2.current = 'Validating';
+    setStatus2('Validating');
+    setResult2(null);
+    setError2(null);
+
+    try {
+      await runUntimedDiagnostic({
+        operationCount: ARRAY_OP_COUNT,
+        operation: () => nativeSumArray(sharedArray),
+        validateResult: (_index, nativeValue) =>
+          verifyArrayResult(
+            sharedArrayExpectedSum,
+            sharedArray.length,
+            nativeValue,
+          ),
+      });
+      if (!isMounted.current) {
+        return;
+      }
+      statusRef2.current = 'Validated';
+      setStatus2('Validated');
+    } catch (error) {
+      if (!isMounted.current) {
+        return;
+      }
+      statusRef2.current = 'Failed';
+      setStatus2('Failed');
+      setError2(
+        error instanceof Error
+          ? error.message
+          : 'Scenario 4 diagnostic failed unexpectedly.',
+      );
+    }
+  }, [isAnyRunning, sharedArray, sharedArrayExpectedSum]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -213,6 +315,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
           running={status1 === 'Running'}
           anyRunning={isAnyRunning}
           onStart={startTest1}
+          onValidate={validateTest1}
           onStop={stopTest1}
         />
 
@@ -225,6 +328,7 @@ export default function Scenario4Screen({onBack}: Props): React.JSX.Element {
           running={status2 === 'Running'}
           anyRunning={isAnyRunning}
           onStart={startTest2}
+          onValidate={validateTest2}
           onStop={stopTest2}
         >
           <PayloadSizeSelector
@@ -258,6 +362,7 @@ function TestCard({
   running,
   anyRunning,
   onStart,
+  onValidate,
   onStop,
   children,
 }: TestCardProps): React.JSX.Element {
@@ -306,6 +411,13 @@ function TestCard({
           disabled={anyRunning}
           activeOpacity={0.7}>
           <Text style={styles.buttonText}>Start</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.validateButton, anyRunning && styles.buttonDisabled]}
+          onPress={onValidate}
+          disabled={anyRunning}
+          activeOpacity={0.7}>
+          <Text style={styles.buttonText}>Verify all</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.button, styles.stopButton, !running && styles.buttonDisabled]}
@@ -477,6 +589,9 @@ const styles = StyleSheet.create({
   },
   stopButton: {
     backgroundColor: '#c62828',
+  },
+  validateButton: {
+    backgroundColor: '#1565c0',
   },
   backButton: {
     backgroundColor: '#455a64',

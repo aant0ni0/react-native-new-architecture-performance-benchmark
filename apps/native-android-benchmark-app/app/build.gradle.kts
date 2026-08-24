@@ -5,6 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.nativebenchmarkapp"
+    buildToolsVersion = "36.0.0"
     compileSdk {
         version = release(36)
     }

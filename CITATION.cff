@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If you use RNArchBench, please cite the software and the associated study."
 title: "RNArchBench: A Reproducible Benchmark and Replication Suite for React Native Architecture Performance"
 type: software
-version: "1.0.3"
+version: "1.0.4"
 authors:
   - family-names: "Michalczak"
     given-names: "Antoni"
@@ -22,8 +22,8 @@ identifiers:
     value: "10.5281/zenodo.22071872"
     description: "Concept DOI for all archived versions of RNArchBench."
   - type: doi
-    value: "10.5281/zenodo.22086549"
-    description: "Version DOI for the archived RNArchBench v1.0.3 release."
+    value: "10.5281/zenodo.22087347"
+    description: "Version DOI for the archived RNArchBench v1.0.4 release."
 repository-code: "https://github.com/aant0ni0/react-native-new-architecture-performance-benchmark"
 license: MIT
 keywords:

@@ -22,6 +22,37 @@ SCENARIO_FILES = {
 
 OPTIONAL_FILES = {"s4_scalar_validation.csv"}
 
+S1_CONDITIONS = {
+    (app, architecture, interval)
+    for app, architecture in {
+        ("Native", "Android"),
+        ("RN", "Legacy"),
+        ("RN", "New Architecture"),
+    }
+    for interval in (50.0, 100.0, 200.0, 1000.0)
+}
+S2_CONDITIONS = {
+    ("Native", "Native", 1000.0),
+    ("RN", "Legacy", 1000.0),
+    ("RN", "NewArch", 1000.0),
+}
+S3_JS_CONDITIONS = {
+    ("Native", "Native"),
+    ("RN", "Legacy"),
+    ("RN", "NewArch"),
+}
+S3_NATIVE_DRIVER_CONDITIONS = {
+    ("RN", "Legacy"),
+    ("RN", "NewArch"),
+}
+S4_TECHNOLOGIES = {"RN_Legacy", "RN_NewArch"}
+S4_ARRAY_CONDITIONS = {
+    (technology, payload_size)
+    for technology in S4_TECHNOLOGIES
+    for payload_size in (1, 10, 100, 1000, 10000)
+}
+S5_TECHNOLOGIES = {"Native", "RN_Legacy", "RN_NewArch"}
+
 
 def add_error(errors: list[str], path: Path, message: str) -> None:
     errors.append(f"{path.relative_to(ROOT)}: {message}")
@@ -133,6 +164,42 @@ def validate_run_groups(
             )
 
 
+def format_condition(columns: list[str], condition: tuple[object, ...]) -> str:
+    return ", ".join(
+        f"{column}={value!r}" for column, value in zip(columns, condition)
+    )
+
+
+def validate_expected_conditions(
+    errors: list[str],
+    path: Path,
+    df: pd.DataFrame,
+    columns: list[str],
+    expected_conditions: set[tuple[object, ...]],
+) -> None:
+    if not set(columns).issubset(df.columns):
+        return
+
+    actual_conditions = set(
+        df[columns].drop_duplicates().itertuples(index=False, name=None)
+    )
+    missing = expected_conditions - actual_conditions
+    unexpected = actual_conditions - expected_conditions
+
+    if missing:
+        formatted = "; ".join(
+            format_condition(columns, condition)
+            for condition in sorted(missing, key=lambda item: tuple(map(str, item)))
+        )
+        add_error(errors, path, "missing required condition(s): " + formatted)
+    if unexpected:
+        formatted = "; ".join(
+            format_condition(columns, condition)
+            for condition in sorted(unexpected, key=lambda item: tuple(map(str, item)))
+        )
+        add_error(errors, path, "unexpected condition(s): " + formatted)
+
+
 def validate_app_architecture_alignment(
     errors: list[str],
     path: Path,
@@ -209,6 +276,9 @@ def validate_s1(errors: list[str], path: Path, expected_runs: int) -> None:
             ("RN", "New Architecture"),
         },
     )
+    validate_expected_conditions(
+        errors, path, df, ["App", "Architecture", "Interval_ms"], S1_CONDITIONS
+    )
     validate_positive_numeric(
         errors,
         path,
@@ -272,6 +342,9 @@ def validate_s2(errors: list[str], path: Path, expected_runs: int) -> None:
             ("RN", "NewArch"),
         },
     )
+    validate_expected_conditions(
+        errors, path, df, ["App", "Architecture", "List_Size"], S2_CONDITIONS
+    )
     validate_positive_numeric(
         errors,
         path,
@@ -298,8 +371,7 @@ def validate_s3(
     errors: list[str],
     path: Path,
     expected_runs: int,
-    allowed_apps: set[str],
-    allowed_architectures: set[str],
+    expected_conditions: set[tuple[str, str]],
 ) -> None:
     df = read_csv_measurements(path)
     required = [
@@ -322,10 +394,21 @@ def validate_s3(
         return
 
     validate_no_missing(errors, path, df, required)
-    validate_allowed_values(errors, path, df, "App", allowed_apps)
-    validate_allowed_values(errors, path, df, "Architecture", allowed_architectures)
+    validate_allowed_values(
+        errors, path, df, "App", {app for app, _ in expected_conditions}
+    )
+    validate_allowed_values(
+        errors,
+        path,
+        df,
+        "Architecture",
+        {architecture for _, architecture in expected_conditions},
+    )
     validate_allowed_values(errors, path, df, "Scenario", {"Animations"})
     validate_allowed_values(errors, path, df, "Status", {"Finished"})
+    validate_expected_conditions(
+        errors, path, df, ["App", "Architecture"], expected_conditions
+    )
     validate_positive_numeric(
         errors,
         path,
@@ -350,7 +433,7 @@ def validate_s3(
 
 
 def validate_s4_scalar(
-    errors: list[str], path: Path, expected_runs: int, allowed_technologies: set[str]
+    errors: list[str], path: Path, expected_runs: int, expected_technologies: set[str]
 ) -> None:
     df = read_csv_measurements(path)
     required = [
@@ -365,8 +448,15 @@ def validate_s4_scalar(
         return
 
     validate_no_missing(errors, path, df, required)
-    validate_allowed_values(errors, path, df, "Technology", allowed_technologies)
+    validate_allowed_values(errors, path, df, "Technology", expected_technologies)
     validate_allowed_values(errors, path, df, "Test", {"Simple"})
+    validate_expected_conditions(
+        errors,
+        path,
+        df,
+        ["Technology"],
+        {(technology,) for technology in expected_technologies},
+    )
     validate_positive_numeric(
         errors,
         path,
@@ -395,6 +485,9 @@ def validate_s4_array(errors: list[str], path: Path, expected_runs: int) -> None
     validate_no_missing(errors, path, df, required)
     validate_allowed_values(errors, path, df, "Technology", {"RN_Legacy", "RN_NewArch"})
     validate_allowed_values(errors, path, df, "Test", {"Complex"})
+    validate_expected_conditions(
+        errors, path, df, ["Technology", "Payload_Size"], S4_ARRAY_CONDITIONS
+    )
     validate_positive_numeric(
         errors,
         path,
@@ -419,7 +512,14 @@ def validate_s5(errors: list[str], path: Path, expected_runs: int) -> None:
         return
 
     validate_no_missing(errors, path, df, required)
-    validate_allowed_values(errors, path, df, "Technology", {"Native", "RN_Legacy", "RN_NewArch"})
+    validate_allowed_values(errors, path, df, "Technology", S5_TECHNOLOGIES)
+    validate_expected_conditions(
+        errors,
+        path,
+        df,
+        ["Technology"],
+        {(technology,) for technology in S5_TECHNOLOGIES},
+    )
     validate_positive_numeric(errors, path, df, ["Run", "TotalTime_ms", "WaitTime_ms"])
     validate_unique_rows(errors, path, df, ["Technology", "Run"])
     validate_run_groups(errors, path, df, ["Technology"], expected_runs)
@@ -448,19 +548,17 @@ def validate_device(
                 errors,
                 path,
                 expected_runs,
-                allowed_apps={"Native", "RN"},
-                allowed_architectures={"Native", "Legacy", "NewArch"},
+                expected_conditions=S3_JS_CONDITIONS,
             )
         elif filename == "s3_native_driver.csv":
             validate_s3(
                 errors,
                 path,
                 expected_runs,
-                allowed_apps={"RN"},
-                allowed_architectures={"Legacy", "NewArch"},
+                expected_conditions=S3_NATIVE_DRIVER_CONDITIONS,
             )
         elif filename == "s4_scalar.csv":
-            validate_s4_scalar(errors, path, expected_runs, {"RN_Legacy", "RN_NewArch"})
+            validate_s4_scalar(errors, path, expected_runs, S4_TECHNOLOGIES)
         elif filename == "s4_array.csv":
             validate_s4_array(errors, path, expected_runs)
         elif filename == "s5_startup.csv":

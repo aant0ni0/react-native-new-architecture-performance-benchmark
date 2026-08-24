@@ -164,6 +164,8 @@ Current operation counts:
 
 Array payload sizes are 1, 10, 100, 1,000, and 10,000 numeric elements. The current app prepares the selected array outside the timed round-trip loop.
 
+Before each timed run, the app performs one untimed correctness preflight. The timed loop contains only sequential calls and awaits, then checks the final response after the timer stops. Use the separate **Verify all** action when a full, non-measured validation of every response is needed.
+
 Run every architecture × payload condition with the chosen fixed repetition count and preserve operation count and total duration. Throughput can be recomputed as:
 
 ```text
