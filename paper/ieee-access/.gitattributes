@@ -1,0 +1,9 @@
+# Preserve imported supplement bytes, including archived SHA-256 inputs.
+supplement/** -text
+tables/** -text
+figures/** -text
+
+# New documentation and verification code use portable line endings.
+README.md text eol=lf
+verify.py text eol=lf
+tests/*.py text eol=lf

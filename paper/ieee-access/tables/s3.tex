@@ -1,0 +1,28 @@
+\begin{table*}[!t]
+\centering
+\caption{Animation: graphics endpoints for the two React Native driver configurations.}
+\label{tab:s3}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Device & Condition/metric & Legacy & New & $\Delta_{L-N}$ & 95\% CI for $\Delta_{L-N}$ & $\delta$ & $p_{\mathrm{Holm}}$ \\
+\midrule
+Moto G72 & JS: Frames/s & 53.99 & 90.25 & -36.26 & [-37.05, -35.51] & -1.00 & $<0.001$ \\
+Moto G72 & JS: Jank (\%) & 0.265 & 0.060 & 0.205 & [0.165, 0.280] & 1.00 & $<0.001$ \\
+Moto G72 & JS: P99 (ms) & 17.50 & 17.00 & 0.50 & [0.00, 1.00] & 0.50 & $0.130$ \\
+Pixel 4a & JS: Frames/s & 35.15 & 60.30 & -25.15 & [-25.22, -25.09] & -1.00 & $<0.001$ \\
+Pixel 4a & JS: Jank (\%) & 0.240 & 0.045 & 0.195 & [0.095, 0.300] & 1.00 & $<0.001$ \\
+Pixel 4a & JS: P99 (ms) & 16.50 & 21.00 & -4.50 & [-5.00, -4.00] & -1.00 & $<0.001$ \\
+Moto G72 & Native driver: Frames/s & 89.26 & 89.67 & -0.41 & [-0.46, -0.35] & -1.00 & $<0.001$ \\
+Moto G72 & Native driver: Jank (\%) & 0.210 & 0.195 & 0.015 & [-0.010, 0.080] & 0.38 & $0.473$ \\
+Moto G72 & Native driver: P99 (ms) & 11.00 & 13.00 & -2.00 & [-3.00, 0.50] & -0.58 & $0.120$ \\
+Pixel 4a & Native driver: Frames/s & 60.33 & 60.29 & 0.04 & [0.03, 0.06] & 0.96 & $<0.001$ \\
+Pixel 4a & Native driver: Jank (\%) & 0.030 & 0.030 & 0.000 & [-0.015, 0.000] & -0.17 & $0.947$ \\
+Pixel 4a & Native driver: P99 (ms) & 17.00 & 17.00 & 0.00 & [-1.50, 0.00] & -0.20 & $0.947$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{0.98\textwidth}\footnotesize
+Ten runs per architecture and condition. $\Delta_{L-N}$ is the Legacy-minus-New median difference. Positive $\delta$ means larger Legacy values. CIs are pointwise unpaired percentile-bootstrap intervals. Exact permutation $p$-values are Holm-adjusted over all 12 comparisons in RQ3 across the two devices; device observations remain separate.
+\end{minipage}
+\end{table*}

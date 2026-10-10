@@ -2,9 +2,11 @@
 
 **RNArchBench** is an open benchmark and replication suite for evaluating performance trade-offs between React Native Legacy Architecture, React Native New Architecture, and native Android.
 
-The repository also contains the frozen measurement and analysis artifact used in the empirical study:
+The repository contains the benchmark software and the frozen measurement artifact used in the companion empirical manuscript:
 
-**Performance Trade-offs of React Native's New Architecture: A Multi-Device Empirical Comparison with Legacy React Native and Native Android**
+**Performance Trade-offs of React Native's New Architecture on Android: A Two-Device Empirical Study**
+
+The analysis supplement prepared for IEEE Access is available in [`paper/ieee-access/`](paper/ieee-access/README.md). It uses the RNArchBench v1.0.4 observations and provides exact permutation tests, Holm correction within each research question across both devices, and sensitivity analyses for multiplicity and selected S4 remeasurements. The original archived analysis remains in `analysis/`; the manuscript supplement is a separate addition and is not part of the frozen v1.0.4 ZIP.
 
 RNArchBench provides:
 
@@ -37,6 +39,13 @@ react-native-new-architecture-performance-benchmark/
     pixel-4a/
     README.md
   figures/
+  paper/
+    ieee-access/
+      supplement/
+      tables/
+      figures/
+      verify.py
+      README.md
   perfetto/
   scripts/
   .github/
@@ -67,8 +76,8 @@ S4 exposes runtime payload sizes of 1, 10, 100, 1,000, and 10,000 elements. Each
 
 The frozen datasets included with the replication package were collected on:
 
-- Motorola Moto G72 - 120 Hz display,
-- Google Pixel 4a - 60 Hz display, Android 13.
+- Motorola Moto G72 - nominal 120 Hz display,
+- Google Pixel 4a - nominal 60 Hz display, Android 13.
 
 The devices are treated as separate replication contexts rather than pooled into one sample.
 
@@ -185,7 +194,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\capture_environment.ps1 -Outp
 
 The script records the Git revision, host tool versions, and Android device/build properties available through ADB.
 
-## Reproduce the Statistical Analysis
+## Reproduce the Analyses
 
 Create an isolated Python environment:
 
@@ -195,7 +204,28 @@ python -m venv .venv
 python -m pip install -r .\analysis\requirements-lock.txt
 ```
 
-Run:
+### Manuscript Tables and Figures
+
+From the repository root, verify the complete manuscript supplement:
+
+```powershell
+python paper/ieee-access/verify.py
+```
+
+This command reproduces the analysis and four figures in a temporary directory, compares the numerical results and LaTeX tables with the bundled manuscript outputs, and verifies the reference-file checksums. It leaves the checkout unchanged. The analysis covers 700 records, 70 ten-run cells, and 40 Legacy-New comparisons using all 184756 permutation assignments, RQ-wise Holm correction across both devices, and sensitivity analyses.
+
+To regenerate outputs in `paper/ieee-access/` instead, run:
+
+```powershell
+python paper/ieee-access/supplement/reproduce_results.py
+python paper/ieee-access/supplement/make_figures.py
+```
+
+See [`paper/ieee-access/README.md`](paper/ieee-access/README.md) for the package layout and verification details.
+
+### Archived v1.0.4 Analysis
+
+To reproduce the original release analysis, run:
 
 ```powershell
 python .\analysis\validate_data.py
@@ -214,7 +244,7 @@ The analysis scripts accept source CSVs that use either decimal points or decima
 
 `analysis/validate_data.py` checks the canonical CSV schema, exact experimental condition grid and run counts, required fields, and Scenario 4 throughput formula before you regenerate tables or figures.
 
-Primary Legacy-vs-New comparisons report permutation-based Mann-Whitney U p-values, Cliff's delta, Benjamini-Hochberg-adjusted q-values, and a deterministic bootstrap 95% confidence interval for the Legacy-minus-New median difference. For S3, the inferential endpoints are restricted to reproducible graphics-layer metrics; the retained one-second callback-rate summary and CPU/RAM fields are descriptive.
+The archived Legacy-vs-New comparisons use 100000 permutation resamples for Mann-Whitney U p-values, Cliff's delta, Benjamini-Hochberg adjustment within each RQ-by-device family, and a deterministic bootstrap 95% confidence interval for the Legacy-minus-New median difference. For S3, the inferential endpoints are restricted to reproducible graphics-layer metrics; the retained one-second callback-rate summary and CPU/RAM fields are descriptive. Use the separate manuscript commands above for the exact tests and Holm-adjusted tables reported in the article.
 
 ## Reproducibility Boundary
 
@@ -229,8 +259,9 @@ Usability improvements added after the historical measurements, such as runtime 
 The repository includes:
 
 - `analysis/validate_data.py` for canonical-data validation,
+- `paper/ieee-access/verify.py` and its regression tests for the manuscript supplement,
 - Jest and TypeScript checks for the React Native benchmark app,
-- `.github/workflows/reproducibility.yml` for reproducibility, analysis, and architecture-toggle CI.
+- `.github/workflows/reproducibility.yml` for archived-analysis, manuscript-supplement, application-build, and architecture-toggle CI.
 
 ## Perfetto Traces
 
@@ -244,12 +275,14 @@ perfetto/SHA256SUMS.txt
 
 ## Archived Release and DOI
 
-The exact RNArchBench v1.0.4 artifact prepared for archival and the SoftwareX submission is preserved on Zenodo:
+The frozen RNArchBench v1.0.4 software and measurement artifact is preserved on Zenodo:
 
 - Version DOI (v1.0.4): [10.5281/zenodo.22087347](https://doi.org/10.5281/zenodo.22087347)
 - Concept DOI (all versions): [10.5281/zenodo.22071872](https://doi.org/10.5281/zenodo.22071872)
 
 For reproducibility, cite the version DOI when referring to the exact artifact used in a study. The concept DOI may be used when referring to RNArchBench as an evolving software project.
+
+This DOI identifies the frozen software and measurement artifact. The companion manuscript analysis is versioned separately in [`paper/ieee-access/`](paper/ieee-access/README.md) and preserves the reference observations.
 
 ## Citation
 

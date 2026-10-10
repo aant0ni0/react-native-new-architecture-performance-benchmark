@@ -1,0 +1,82 @@
+{
+  "evidence_basis": "Experimenter-reported acquisition settings and measurement-protocol correspondence, transcribed from the original records.",
+  "reference_artifact": {
+    "doi": "10.5281/zenodo.22087347",
+    "version": "1.0.4",
+    "reference_snapshot_modified": false
+  },
+  "devices": {
+    "pixel-4a": {
+      "android_release": "13",
+      "build_id": "TQ3A.230805.001.S2",
+      "build_incremental": "12655424",
+      "build_fingerprint": "google/sunfish/sunfish:13/TQ3A.230805.001.S2/12655424:user/release-keys",
+      "evidence_status": "Reported by the experimenter for the measurement device; no per-run system-property dump is retained.",
+      "per_run_active_refresh_mode": null,
+      "security_patch_date": null
+    },
+    "moto-g72": {
+      "android_release": "13",
+      "build_id": null,
+      "build_incremental": null,
+      "build_fingerprint": null,
+      "evidence_status": "Android release is recorded in the study description; a build fingerprint is not available in the retained acquisition records.",
+      "per_run_active_refresh_mode": null,
+      "security_patch_date": null
+    }
+  },
+  "measured_build_variants": {
+    "react_native_legacy": "release",
+    "react_native_new": "release",
+    "native_android": "release",
+    "evidence_status": "Reported by the experimenter; use of the native Android release variant was explicitly confirmed.",
+    "measured_apk_sha256": null
+  },
+  "reported_controls": {
+    "battery_level": "Similar battery levels; numerical targets and run-level battery records are unavailable.",
+    "expanded_moto_s1_s3_protocol": {
+      "runs_per_condition": 10,
+      "architecture_order": "Alternating or randomized order was specified.",
+      "cooling": "Short cooling breaks were specified.",
+      "execution_report": "The experimenter reported performing the additional tests according to the agreed procedure.",
+      "per_run_order_log": null,
+      "per_run_thermal_log": null,
+      "actual_randomization_status": "Unknown: the specified protocol and general execution report are not a retained run sequence.",
+      "fully_randomized_balanced_design_verified": false
+    }
+  },
+  "pixel_s4_checks": {
+    "scalar": "Separate New Architecture validation series; retained apart from primary observations.",
+    "array": "Payloads 1 and 10 selected because of high initial variability; ten New Architecture runs per payload were repeated after reported fresh application builds and used as canonical series.",
+    "mechanism_identified": false
+  },
+  "s4_series_selection": {
+    "evidence_basis": "reference/data/README.md plus direct comparison of retained initial and canonical CSV records; this is a retrospective provenance description.",
+    "moto_new_scalar": {
+      "reported_reason": "Two anomalous records were remeasured, as described in the reference data README.",
+      "initial_file": "reference/data/moto-g72/raw/s4_scalar_initial.csv",
+      "canonical_file": "reference/data/moto-g72/s4_scalar.csv",
+      "replaced_runs": [
+        {"run": 1, "operation_count": 100000, "initial_duration_ms": 27259, "canonical_duration_ms": 20542},
+        {"run": 5, "operation_count": 100000, "initial_duration_ms": 29287, "canonical_duration_ms": 20288}
+      ],
+      "other_new_runs": "The other eight New Architecture scalar counts and durations are unchanged."
+    },
+    "pixel_new_array": {
+      "reported_reason": "High variability in the initial New Architecture series for payloads 1 and 10.",
+      "reported_action": "Fresh application builds followed by ten replacement runs for each of these two payloads.",
+      "initial_file": "reference/data/pixel-4a/raw/s4_array_initial.csv",
+      "appended_retest_file": "reference/data/pixel-4a/raw/s4_array_appended_cleanbuild_retest.csv",
+      "canonical_file": "reference/data/pixel-4a/s4_array.csv",
+      "replaced_payloads": [1, 10],
+      "runs_per_replacement_series": 10,
+      "retained_conditions": "Original Legacy runs at all payloads; original New Architecture runs at payloads 100, 1000, and 10000."
+    },
+    "numerical_anomaly_or_variability_threshold": null,
+    "prospective_replacement_acceptance_rule": null,
+    "complete_rebuild_commands": null,
+    "build_cache_cause_established": false,
+    "analysis": "The reference canonical sample is preserved. Sensitivity analysis restores all three affected initial series together, recomputes throughput from retained counts and durations, and applies Holm correction to all 12 RQ4 contrasts. Initial and canonical runs are not pooled."
+  },
+  "interpretation": "Reported settings and protocol specifications do not reconstruct missing binary hashes, run order, active display modes, or concurrent thermal telemetry. They do not establish a component-level cause for the Pixel scalar throughput difference."
+}

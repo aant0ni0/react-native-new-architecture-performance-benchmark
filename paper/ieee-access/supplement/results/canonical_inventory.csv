@@ -1,0 +1,71 @@
+device,file,condition,n
+Moto G72,s1_latency.csv,"('Android', np.float64(50.0))",10
+Moto G72,s1_latency.csv,"('Android', np.float64(100.0))",10
+Moto G72,s1_latency.csv,"('Android', np.float64(200.0))",10
+Moto G72,s1_latency.csv,"('Android', np.float64(1000.0))",10
+Moto G72,s1_latency.csv,"('Legacy', np.float64(50.0))",10
+Moto G72,s1_latency.csv,"('Legacy', np.float64(100.0))",10
+Moto G72,s1_latency.csv,"('Legacy', np.float64(200.0))",10
+Moto G72,s1_latency.csv,"('Legacy', np.float64(1000.0))",10
+Moto G72,s1_latency.csv,"('New Architecture', np.float64(50.0))",10
+Moto G72,s1_latency.csv,"('New Architecture', np.float64(100.0))",10
+Moto G72,s1_latency.csv,"('New Architecture', np.float64(200.0))",10
+Moto G72,s1_latency.csv,"('New Architecture', np.float64(1000.0))",10
+Moto G72,s2_scroll.csv,"('Legacy',)",10
+Moto G72,s2_scroll.csv,"('Native',)",10
+Moto G72,s2_scroll.csv,"('NewArch',)",10
+Moto G72,s3_js_driver.csv,"('Legacy',)",10
+Moto G72,s3_js_driver.csv,"('Native',)",10
+Moto G72,s3_js_driver.csv,"('NewArch',)",10
+Moto G72,s3_native_driver.csv,"('Legacy',)",10
+Moto G72,s3_native_driver.csv,"('NewArch',)",10
+Moto G72,s4_scalar.csv,"('RN_Legacy',)",10
+Moto G72,s4_scalar.csv,"('RN_NewArch',)",10
+Moto G72,s4_array.csv,"('RN_Legacy', np.int64(1))",10
+Moto G72,s4_array.csv,"('RN_Legacy', np.int64(10))",10
+Moto G72,s4_array.csv,"('RN_Legacy', np.int64(100))",10
+Moto G72,s4_array.csv,"('RN_Legacy', np.int64(1000))",10
+Moto G72,s4_array.csv,"('RN_Legacy', np.int64(10000))",10
+Moto G72,s4_array.csv,"('RN_NewArch', np.int64(1))",10
+Moto G72,s4_array.csv,"('RN_NewArch', np.int64(10))",10
+Moto G72,s4_array.csv,"('RN_NewArch', np.int64(100))",10
+Moto G72,s4_array.csv,"('RN_NewArch', np.int64(1000))",10
+Moto G72,s4_array.csv,"('RN_NewArch', np.int64(10000))",10
+Moto G72,s5_startup.csv,"('Native',)",10
+Moto G72,s5_startup.csv,"('RN_Legacy',)",10
+Moto G72,s5_startup.csv,"('RN_NewArch',)",10
+Pixel 4a,s1_latency.csv,"('Android', np.float64(50.0))",10
+Pixel 4a,s1_latency.csv,"('Android', np.float64(100.0))",10
+Pixel 4a,s1_latency.csv,"('Android', np.float64(200.0))",10
+Pixel 4a,s1_latency.csv,"('Android', np.float64(1000.0))",10
+Pixel 4a,s1_latency.csv,"('Legacy', np.float64(50.0))",10
+Pixel 4a,s1_latency.csv,"('Legacy', np.float64(100.0))",10
+Pixel 4a,s1_latency.csv,"('Legacy', np.float64(200.0))",10
+Pixel 4a,s1_latency.csv,"('Legacy', np.float64(1000.0))",10
+Pixel 4a,s1_latency.csv,"('New Architecture', np.float64(50.0))",10
+Pixel 4a,s1_latency.csv,"('New Architecture', np.float64(100.0))",10
+Pixel 4a,s1_latency.csv,"('New Architecture', np.float64(200.0))",10
+Pixel 4a,s1_latency.csv,"('New Architecture', np.float64(1000.0))",10
+Pixel 4a,s2_scroll.csv,"('Legacy',)",10
+Pixel 4a,s2_scroll.csv,"('Native',)",10
+Pixel 4a,s2_scroll.csv,"('NewArch',)",10
+Pixel 4a,s3_js_driver.csv,"('Legacy',)",10
+Pixel 4a,s3_js_driver.csv,"('Native',)",10
+Pixel 4a,s3_js_driver.csv,"('NewArch',)",10
+Pixel 4a,s3_native_driver.csv,"('Legacy',)",10
+Pixel 4a,s3_native_driver.csv,"('NewArch',)",10
+Pixel 4a,s4_scalar.csv,"('RN_Legacy',)",10
+Pixel 4a,s4_scalar.csv,"('RN_NewArch',)",10
+Pixel 4a,s4_array.csv,"('RN_Legacy', np.int64(1))",10
+Pixel 4a,s4_array.csv,"('RN_Legacy', np.int64(10))",10
+Pixel 4a,s4_array.csv,"('RN_Legacy', np.int64(100))",10
+Pixel 4a,s4_array.csv,"('RN_Legacy', np.int64(1000))",10
+Pixel 4a,s4_array.csv,"('RN_Legacy', np.int64(10000))",10
+Pixel 4a,s4_array.csv,"('RN_NewArch', np.int64(1))",10
+Pixel 4a,s4_array.csv,"('RN_NewArch', np.int64(10))",10
+Pixel 4a,s4_array.csv,"('RN_NewArch', np.int64(100))",10
+Pixel 4a,s4_array.csv,"('RN_NewArch', np.int64(1000))",10
+Pixel 4a,s4_array.csv,"('RN_NewArch', np.int64(10000))",10
+Pixel 4a,s5_startup.csv,"('Native',)",10
+Pixel 4a,s5_startup.csv,"('RN_Legacy',)",10
+Pixel 4a,s5_startup.csv,"('RN_NewArch',)",10

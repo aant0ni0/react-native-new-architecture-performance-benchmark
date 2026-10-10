@@ -1,0 +1,24 @@
+\begin{table*}[!t]
+\centering
+\caption{Update-to-next-frame-callback delay: medians of run-level means (ms).}
+\label{tab:s1}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Device & Condition/metric & Legacy & New & $\Delta_{L-N}$ & 95\% CI for $\Delta_{L-N}$ & $\delta$ & $p_{\mathrm{Holm}}$ \\
+\midrule
+Moto G72 & Interval 50 ms & 62.88 & 35.83 & 27.05 & [23.12, 29.61] & 1.00 & $<0.001$ \\
+Moto G72 & Interval 100 ms & 31.35 & 22.28 & 9.07 & [8.86, 9.64] & 1.00 & $<0.001$ \\
+Moto G72 & Interval 200 ms & 35.75 & 22.81 & 12.94 & [12.65, 13.46] & 1.00 & $<0.001$ \\
+Moto G72 & Interval 1000 ms & 36.39 & 22.25 & 14.14 & [13.80, 14.46] & 1.00 & $<0.001$ \\
+Pixel 4a & Interval 50 ms & 41.57 & 28.28 & 13.29 & [12.99, 13.73] & 1.00 & $<0.001$ \\
+Pixel 4a & Interval 100 ms & 54.22 & 38.95 & 15.27 & [14.78, 15.95] & 1.00 & $<0.001$ \\
+Pixel 4a & Interval 200 ms & 65.96 & 53.02 & 12.94 & [12.29, 13.48] & 1.00 & $<0.001$ \\
+Pixel 4a & Interval 1000 ms & 114.18 & 58.79 & 55.40 & [52.18, 62.34] & 1.00 & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{0.98\textwidth}\footnotesize
+Ten runs per architecture and condition. $\Delta_{L-N}$ is the Legacy-minus-New median difference. Positive $\delta$ means larger Legacy values. CIs are pointwise unpaired percentile-bootstrap intervals. Exact permutation $p$-values are Holm-adjusted over all 8 comparisons in RQ1 across the two devices; device observations remain separate.
+\end{minipage}
+\end{table*}

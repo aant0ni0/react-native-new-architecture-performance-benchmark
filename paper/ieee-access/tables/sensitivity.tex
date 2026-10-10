@@ -1,0 +1,19 @@
+\begin{table*}[!t]
+\centering
+\caption{S4 sensitivity to restoring the initial measurement series (operations/s).}
+\label{tab:sensitivity}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrr}
+\toprule
+Device & Condition & Legacy median & \shortstack{New: canonical-\\series median} & \shortstack{New: initial-\\series median} & Initial $\delta$ & Initial $p_{\mathrm{Holm}}$ \\
+\midrule
+Moto G72 & Scalar & 6480.0 & 4827.5 & 4779.5 & 1.00 & $<0.001$ \\
+Pixel 4a & Array 1 & 6833.5 & 2635.0 & 1589.5 & 1.00 & $<0.001$ \\
+Pixel 4a & Array 10 & 6622.5 & 3895.5 & 2178.5 & 0.60 & $0.093$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{0.98\textwidth}\footnotesize
+Ten runs per series. All three initial series are restored together; the other nine RQ4 contrasts retain their canonical observations. The 12 exact tests are adjusted together. Throughput is recomputed from counts and durations and rounded to operations/s. Initial and canonical observations are not pooled.
+\end{minipage}
+\end{table*}

@@ -1,0 +1,11 @@
+{
+  "doi": "10.5281/zenodo.22087347",
+  "tag": "v1.0.4",
+  "commit": "4e7dac59541d650a7f85cab76af8080836849bb4",
+  "zenodo_archive_md5": "23a84b8c5b7c007c7c7256b21d157f23",
+  "zenodo_archive_sha256": "3d7a63d04517a22b337ee7b7eb7118ce6df90a72441b328bcd7730e01ed785a7",
+  "github_archive_sha256": "847cc29b29380e34598f61d993f28068501db7e1dd65a28910d4badc1ceb29d9",
+  "data_and_analysis_files_compared": 40,
+  "line_ending_only_differences": 31,
+  "content_differences_after_LF_normalization": []
+}

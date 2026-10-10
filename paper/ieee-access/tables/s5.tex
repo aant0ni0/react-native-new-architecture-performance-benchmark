@@ -1,0 +1,18 @@
+\begin{table*}[!t]
+\centering
+\caption{Process-cold start: Android ActivityManager TotalTime (ms).}
+\label{tab:s5}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Device & Condition/metric & Legacy & New & $\Delta_{L-N}$ & 95\% CI for $\Delta_{L-N}$ & $\delta$ & $p_{\mathrm{Holm}}$ \\
+\midrule
+Moto G72 & Cold start & 262.00 & 198.50 & 63.50 & [49.00, 76.00] & 1.00 & $<0.001$ \\
+Pixel 4a & Cold start & 195.00 & 186.50 & 8.50 & [1.00, 17.00] & 0.68 & $0.008$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{0.98\textwidth}\footnotesize
+Ten runs per architecture and condition. $\Delta_{L-N}$ is the Legacy-minus-New median difference. Positive $\delta$ means larger Legacy values. CIs are pointwise unpaired percentile-bootstrap intervals. Exact permutation $p$-values are Holm-adjusted over all 2 comparisons in RQ5 across the two devices; device observations remain separate.
+\end{minipage}
+\end{table*}
