@@ -1,0 +1,16 @@
+{
+  "canonical_records": 700,
+  "canonical_cells": 70,
+  "primary_contrasts": 40,
+  "permutation_assignments": 184756,
+  "Holm_RQ_significant": 31,
+  "BH_RQ_significant": 33,
+  "Holm_all40_significant": 30,
+  "s4_unrounded_changes_Holm": 0,
+  "python": "3.11.4",
+  "numpy": "2.3.5",
+  "pandas": "2.2.3",
+  "scipy": "1.17.0",
+  "archived_CSVs_verified": true,
+  "reference_sha256_unchanged": true
+}

@@ -1,0 +1,7 @@
+Device,Technology,TotalTime_ms_mean,TotalTime_ms_median,TotalTime_ms_sd,TotalTime_ms_n
+Moto G72,Native,186.7,187.0,10.033831659828552,10
+Moto G72,RN_Legacy,259.9,262.0,11.845768114488068,10
+Moto G72,RN_NewArch,197.9,198.5,8.143845665422585,10
+Pixel 4a,Native,151.8,151.5,7.390684827688313,10
+Pixel 4a,RN_Legacy,196.6,195.0,7.919034733546199,10
+Pixel 4a,RN_NewArch,187.8,186.5,5.513619500836088,10

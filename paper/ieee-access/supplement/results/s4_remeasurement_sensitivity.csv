@@ -1,0 +1,4 @@
+Device,Metric,Canonical_New_median,Initial_New_median,Legacy_median,Initial_Cliffs_delta,Initial_CI_low,Initial_CI_high,Initial_p_exact,Initial_p_Holm_RQ
+Moto G72,Scalar,4827.5,4779.5,6480.0,1.0,1546.0,2270.0,1.082508822446903e-05,0.00012990105869362836
+Pixel 4a,Array payload 1,2635.0,1589.5,6833.5,1.0,4677.0,5711.5,1.082508822446903e-05,0.00012990105869362836
+Pixel 4a,Array payload 10,3895.5,2178.5,6622.5,0.6,1059.5,4919.5,0.023230639329710537,0.09292255731884215

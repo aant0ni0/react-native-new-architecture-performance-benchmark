@@ -1,0 +1,28 @@
+\begin{table*}[!t]
+\centering
+\caption{Sequential asynchronous JavaScript--native throughput (operations/s).}
+\label{tab:s4}
+\small\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrrrrr}
+\toprule
+Device & Condition/metric & Legacy & New & $\Delta_{L-N}$ & 95\% CI for $\Delta_{L-N}$ & $\delta$ & $p_{\mathrm{Holm}}$ \\
+\midrule
+Moto G72 & Scalar & 6480.0 & 4827.5 & 1652.5 & [1514.0, 1727.0] & 1.00 & $<0.001$ \\
+Pixel 4a & Scalar & 7463.0 & 417.0 & 7046.0 & [6911.5, 7097.0] & 1.00 & $<0.001$ \\
+Moto G72 & Array 1 & 6131.5 & 3746.0 & 2385.5 & [1760.0, 3050.5] & 1.00 & $<0.001$ \\
+Moto G72 & Array 10 & 6004.5 & 5719.5 & 285.0 & [-377.5, 781.0] & 0.36 & $0.571$ \\
+Moto G72 & Array 100 & 4443.5 & 5836.0 & -1392.5 & [-1544.0, -1257.0] & -1.00 & $<0.001$ \\
+Moto G72 & Array 1000 & 1192.0 & 1179.5 & 12.5 & [-141.0, 86.5] & -0.14 & $0.617$ \\
+Moto G72 & Array 10000 & 163.0 & 177.0 & -14.0 & [-17.0, -10.0] & -1.00 & $<0.001$ \\
+Pixel 4a & Array 1 & 6833.5 & 2635.0 & 4198.5 & [3861.0, 4311.5] & 1.00 & $<0.001$ \\
+Pixel 4a & Array 10 & 6622.5 & 3895.5 & 2727.0 & [1977.5, 3321.5] & 1.00 & $<0.001$ \\
+Pixel 4a & Array 100 & 4170.5 & 5116.0 & -945.5 & [-1296.5, -221.0] & -0.88 & $0.001$ \\
+Pixel 4a & Array 1000 & 1305.0 & 1358.5 & -53.5 & [-122.0, 27.5] & -0.35 & $0.571$ \\
+Pixel 4a & Array 10000 & 146.5 & 119.0 & 27.5 & [27.0, 28.5] & 1.00 & $<0.001$ \\
+\bottomrule
+\end{tabular}
+\par\smallskip
+\begin{minipage}{0.98\textwidth}\footnotesize
+Ten runs per architecture and condition. $\Delta_{L-N}$ is the Legacy-minus-New median difference. Positive $\delta$ means larger Legacy values. CIs are pointwise unpaired percentile-bootstrap intervals. Exact permutation $p$-values are Holm-adjusted over all 12 comparisons in RQ4 across the two devices; device observations remain separate.
+\end{minipage}
+\end{table*}
